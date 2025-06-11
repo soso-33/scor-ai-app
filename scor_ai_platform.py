@@ -43,19 +43,20 @@ if 'results' not in st.session_state:
     st.session_state.bcg_importance = {}
     st.session_state.user_info = {}
 
-# ====== الصفحة الأولى: التقييم ======
+# ====== PAGE 1: EVALUATION ======
 if page == "🧪 التقييم":
-    st.header("🧪 التقييم العام")
-    st.sidebar.header("📌 بيانات المستخدم")
-    with st.sidebar.form("user_form"):
+    st.header("🧪 التقييم العام لتبني الذكاء الاصطناعي في سلسلة الإمداد")
+    st.markdown("### 👤 بيانات المستخدم")
+
+    with st.form("user_info_form", clear_on_submit=False):
         user_name = st.text_input("الاسم الكامل")
         company_name = st.text_input("اسم الشركة أو المؤسسة")
         sector = st.selectbox("القطاع", ["الرعاية الصحية", "التصنيع", "اللوجستيات", "الخدمات", "أخرى"])
         country = st.text_input("الدولة")
         save_results = st.checkbox("أوافق على حفظ نتائجي للمقارنة لاحقًا")
-        submitted = st.form_submit_button("ابدأ التقييم")
+        submit_info = st.form_submit_button("بدء التقييم")
 
-    if not submitted:
+    if not submit_info:
         st.stop()
 
     st.session_state.user_info = {
@@ -84,38 +85,77 @@ if page == "🧪 التقييم":
     colors = []
     swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
 
+    st.markdown("## 📝 استبيان تقييم المراحل")
+
     for phase in scor_phases:
-        with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
-            phase_df = df[df['SCOR Phase'] == phase]
-            total = 0
-            for idx, row in enumerate(phase_df.itertuples()):
-                score = st.slider(f"{idx+1}. {row._3}", 1, 5, 3, key=f"{phase}_{idx}")
-                total += score
-            avg = total / len(phase_df)
-            results[phase] = avg
+        st.markdown(f"### {phase_labels.get(phase, phase)}")
+        phase_df = df[df['SCOR Phase'] == phase]
+        total = 0
+        for i, (_, row) in enumerate(phase_df.iterrows(), start=1):
+            question = row['Question (AR)']
+            key = f"{phase}_{i}"
+            score = st.radio(
+                f"{i}. {question}",
+                options=[1, 2, 3, 4, 5],
+                index=2,
+                horizontal=True,
+                key=key,
+                format_func=lambda x: f"{x} ⭐"
+            )
+            total += score
+        avg = total / len(phase_df)
+        results[phase] = avg
 
-            if avg >= 4:
-                st.success("🔵 ممتاز")
-                colors.append("#3498DB")
-                swot["قوة"].append(phase_labels[phase])
-            elif avg >= 2.5:
-                st.warning("🟠 جيد")
-                colors.append("#F39C12")
-                swot["فرصة"].append(phase_labels[phase])
-            else:
-                st.error("🔴 ضعيف")
-                colors.append("#E74C3C")
-                swot["ضعف"].append(phase_labels[phase])
+        if avg >= 4:
+            st.success("🔵 أداء ممتاز في هذه المرحلة")
+            colors.append("#3498DB")
+            swot["قوة"].append(phase_labels[phase])
+        elif avg >= 2.5:
+            st.warning("🟠 هناك فرصة للتحسين")
+            colors.append("#F39C12")
+            swot["فرصة"].append(phase_labels[phase])
+        else:
+            st.error("🔴 أداء ضعيف يحتاج تدخل")
+            colors.append("#E74C3C")
+            swot["ضعف"].append(phase_labels[phase])
 
-    with st.expander("📡 تقييم جاهزية IoT والتتبع اللحظي"):
-        q1 = st.radio("هل تستخدم أجهزة استشعار؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
-        q2 = st.radio("هل لديك لوحات تحكم لحظية؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
-        q3 = st.radio("هل تحلل البيانات لحظيًا؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
-        q4 = st.radio("هل تتكامل البيانات مع ERP؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
+        st.markdown("---")
 
-        answers_map = {"لا": 1, "قليلاً": 2, "أحيانًا": 3, "بشكل جيد": 4, "بشكل كامل": 5}
-        iot_avg = (answers_map[q1] + answers_map[q2] + answers_map[q3] + answers_map[q4]) / 4
-        st.markdown(f"**متوسط جاهزية IoT: {iot_avg:.1f}/5**")
+    st.markdown("## 📡 تقييم جاهزية IoT والتتبع اللحظي")
+    q1 = st.radio("1. هل تستخدم أجهزة استشعار في العمليات؟", [1, 2, 3, 4, 5], index=2, horizontal=True)
+    q2 = st.radio("2. هل لديك لوحات تحكم لحظية لمتابعة الأداء؟", [1, 2, 3, 4, 5], index=2, horizontal=True)
+    q3 = st.radio("3. هل تقوم بتحليل البيانات لحظيًا؟", [1, 2, 3, 4, 5], index=2, horizontal=True)
+    q4 = st.radio("4. هل تتكامل البيانات مع نظام ERP أو DSS؟", [1, 2, 3, 4, 5], index=2, horizontal=True)
+
+    iot_avg = (q1 + q2 + q3 + q4) / 4
+    st.markdown(f"**متوسط جاهزية IoT: {iot_avg:.1f}/5**")
+
+    # حفظ في السيشن
+    st.session_state.results = results
+    st.session_state.iot_avg = iot_avg
+    st.session_state.swot = swot
+
+    # حفظ النتائج في الملف
+    if save_results:
+        data = {
+            "الاسم": [user_name],
+            "الشركة": [company_name],
+            "القطاع": [sector],
+            "الدولة": [country],
+            "التاريخ": [datetime.now().strftime("%Y-%m-%d %H:%M")],
+            "متوسط IoT": [round(iot_avg, 2)]
+        }
+        for phase, score in results.items():
+            data[phase] = [round(score, 2)]
+        df_new = pd.DataFrame(data)
+        try:
+            df_existing = pd.read_excel("benchmark_data.xlsx")
+            df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+        except FileNotFoundError:
+            df_combined = df_new
+        df_combined.to_excel("benchmark_data.xlsx", index=False)
+        st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
+
 
     st.session_state.results = results
     st.session_state.iot_avg = iot_avg

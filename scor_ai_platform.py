@@ -171,32 +171,63 @@ elif page == "📊 النتائج والتحليل":
         st.warning("يرجى تنفيذ التقييم أولًا.")
         st.stop()
 
+    # --- رسم بياني: SCOR Readiness ---
     labels = list(results.keys())
     values = list(results.values())
     fig = go.Figure([go.Bar(x=labels, y=values, text=[f"{v:.1f}" for v in values], textposition='auto')])
-    fig.update_layout(title="تقييم مراحل SCOR", yaxis_range=[0,5], height=400)
+    fig.update_layout(title="تقييم جاهزية مراحل SCOR", yaxis_range=[0,5], height=400)
     st.plotly_chart(fig)
 
-    st.subheader("🧠 مصفوفة SWOT الذكية")
+    # --- تحليل جاهزية SCOR ---
+    st.subheader("🔍 تحليل التقييم العام:")
+    for phase, score in results.items():
+        status = (
+            "🔴 منخفضة" if score < 2 else
+            "🟠 متوسطة" if score < 3.5 else
+            "🟢 مرتفعة"
+        )
+        st.markdown(f"- **{phase_labels.get(phase, phase)}**: {score:.1f} → {status}")
+
+    # --- تحليل جاهزية IoT ---
+    st.subheader("🤖 تقييم جاهزية إنترنت الأشياء IoT:")
+    if iot_avg:
+        iot_status = (
+            "🔴 منخفضة" if iot_avg < 2 else
+            "🟠 متوسطة" if iot_avg < 3.5 else
+            "🟢 مرتفعة"
+        )
+        st.markdown(f"متوسط تقييم IoT: **{iot_avg:.1f}** → {iot_status}")
+    else:
+        st.markdown("لم يتم تقييم IoT بعد.")
+
+    # --- تحليل SWOT ---
+    st.subheader("🧠 مصفوفة SWOT الذكية:")
     st.markdown(f"""
     - **نقاط القوة:** {', '.join(swot['قوة']) or 'لا توجد'}
     - **نقاط الضعف:** {', '.join(swot['ضعف']) or 'لا توجد'}
     - **الفرص:** {', '.join(swot['فرصة']) or 'لا توجد'}
-    - **التهديدات:** يتم تحليلها لاحقًا
+    - **التهديدات:** سيتم تحليلها لاحقًا بناءً على أداء السوق
     """)
 
-    with st.expander("📊 تحليل BCG Dashboard"):
-        bcg_importance = {}
-        labels_bcg, readiness, importance_vals, categories = [], [], [], []
+    # --- مصفوفة BCG تلقائية ---
+    with st.expander("📊 تحليل مصفوفة BCG"):
+        st.markdown("تحليل تلقائي بناءً على الجاهزية والأهمية (3 كمتوسط لكل مرحلة).")
+
+        labels_bcg = []
+        readiness = []
+        importance_vals = []
+        categories = []
+
         for phase in results:
-            imp = st.slider(f"أهمية {phase_labels.get(phase, phase)}", 1, 5, 3, key=f"imp_{phase}")
-            bcg_importance[phase] = imp
+            imp = 3  # قيمة افتراضية لكل المراحل (يمكن تعديلها لسلايدر عام)
+            r = results[phase]
             labels_bcg.append(phase)
-            readiness.append(results[phase])
+            readiness.append(r)
             importance_vals.append(imp)
-            if results[phase] >= 3 and imp >= 3:
+
+            if r >= 3 and imp >= 3:
                 categories.append("⭐ نجم")
-            elif results[phase] >= 3:
+            elif r >= 3:
                 categories.append("❓ استفهام")
             elif imp >= 3:
                 categories.append("🐄 بقرة")
@@ -212,9 +243,11 @@ elif page == "📊 النتائج والتحليل":
         fig_bcg.update_layout(title="مصفوفة BCG", xaxis_title="الأهمية", yaxis_title="الجاهزية",
                               xaxis=dict(range=[0,5]), yaxis=dict(range=[0,5]))
         st.plotly_chart(fig_bcg)
-        for i, label in enumerate(labels_bcg):
-            st.markdown(f"- {phase_labels.get(label, label)}: {categories[i]}")
 
+        for i, label in enumerate(labels_bcg):
+            st.markdown(f"- **{phase_labels.get(label, label)}** → {categories[i]}")
+
+    # --- تصدير البيانات ---
     with st.expander("🔗 تصدير البيانات (ERP/Odoo)"):
         export_data = {
             "user": user,

@@ -205,30 +205,32 @@ if save_results:
 elif page == "📊 النتائج والتحليل":
     # ضع هنا جزء تحليل النتائج من: رسم بياني، SWOT، IFE/EFE، التوصيات، التصدير...
 
-st.markdown("## 📊 النتائج ومصفوفات التحليل")
-st.divider()
+    st.markdown("## 📊 النتائج ومصفوفات التحليل")
+    st.divider()
 
-# تحقق من وجود بيانات التقييم
-if "results" not in st.session_state or not st.session_state.results:
-    st.warning("يرجى تنفيذ التقييم أولًا.")
-    st.stop()
+    # تحقق من وجود بيانات التقييم
+    if "results" not in st.session_state or not st.session_state.results:
+        st.warning("يرجى تنفيذ التقييم أولًا.")
+        st.stop()
 
-results = st.session_state.results
-swot = st.session_state.swot
-iot_avg = st.session_state.iot_avg
-if "user_info" not in st.session_state:
-    st.warning("⚠️ يرجى تنفيذ التقييم أولًا.")
-    st.stop()
-user = st.session_state.user_info
+    results = st.session_state.results
+    swot = st.session_state.swot
+    iot_avg = st.session_state.iot_avg
 
-# --- 1. رسم بياني SCOR ---
-st.subheader("🎯 تقييم جاهزية مراحل SCOR")
-labels = list(results.keys())
-values = list(results.values())
-fig = go.Figure([go.Bar(x=labels, y=values, text=[f"{v:.1f}" for v in values], textposition='auto')])
-fig.update_layout(title="SCOR Readiness", yaxis_range=[0,5], height=400)
-st.plotly_chart(fig)
-st.divider()
+    if "user_info" not in st.session_state:
+        st.warning("⚠️ يرجى تنفيذ التقييم أولًا.")
+        st.stop()
+
+    user = st.session_state.user_info
+
+    # --- 1. رسم بياني SCOR ---
+    st.subheader("🎯 تقييم جاهزية مراحل SCOR")
+    labels = list(results.keys())
+    values = list(results.values())
+    fig = go.Figure([go.Bar(x=labels, y=values, text=[f"{v:.1f}" for v in values], textposition='auto')])
+    fig.update_layout(title="SCOR Readiness", yaxis_range=[0, 5], height=400)
+    st.plotly_chart(fig)
+    st.divider()
 
 # --- 2. تحليل التقييم العام ---
 st.subheader("🔍 تحليل التقييم العام")

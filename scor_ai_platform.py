@@ -344,7 +344,7 @@ pdf.cell(200, 10, txt=f"IFE Total: {ife_total:.2f} | EFE Total: {efe_total:.2f}"
 pdf.multi_cell(0, 10, txt=f"Recommended Strategy: {strategy}")
 
 buffer = BytesIO()
-pdf_output = pdf.output(dest='S').encode('latin-1')  # ← تصحيح مهم
+pdf_output = pdf.output(dest='S').encode('utf-8')
 buffer.write(pdf_output)
 b64_pdf = base64.b64encode(buffer.getvalue()).decode()
 

@@ -323,7 +323,9 @@ df_export = pd.DataFrame({
 excel_buffer = BytesIO()
 df_export.to_excel(excel_buffer, index=False)
 st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="IFE_EFE_Scores.xlsx", mime="application/vnd.ms-excel")
-elif page == "🤖 التوصيات الذكية":
+if page == "🤖 التوصيات الذكية":
+    # كود التوصيات
+
     # التوصيات الذكية بناءً على نتائج SCOR وIoT وSWOT
 
     st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")

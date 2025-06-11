@@ -95,11 +95,22 @@ if page == "🏠 الصفحة الرئيسية":
     st.image("https://cdn-icons-png.flaticon.com/512/3208/3208711.png", width=200)
 
 elif page == "🧪 التقييم":
-    # كود صفحة التقييم يكمل هنا كالمعتاد
+    # يمكنك لاحقًا إضافة كود التقييم هنا
+    st.markdown("""
+        <style>
+        .centered {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-st.markdown('<div class="centered">', unsafe_allow_html=True)
-st.header("🧪 التقييم العام")
-st.markdown('<div>', unsafe_allow_html=True)
+    st.markdown('<div class="centered">', unsafe_allow_html=True)
+    st.header("🧪 التقييم العام")
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 # إدخال بيانات المستخدم
 if "started" not in st.session_state:

@@ -220,11 +220,26 @@ elif page == "📊 النتائج والتحليل":
         st.warning("يرجى تنفيذ التقييم أولًا.")
         st.stop()
 
- if phase == "Return":
-    score = 5 - score  # عكس تقييم المرتجعات
+# ====== صفحة التقييم ======
+elif page == "📝 التقييم":
+    st.header("📝 تقييم جاهزية الذكاء الاصطناعي حسب نموذج SCOR")
 
-st.session_state.results[phase] = score
+    results = {}
 
+    for phase, label in phase_labels.items():
+        st.subheader(f"{label}")
+        score = st.slider(f"قيّم مرحلة {label}", 1, 5, 3, key=phase)
+
+        # عكس تقييم المرتجعات
+        if phase == "Return":
+            score = 6 - score  # تحويل 5 إلى 1، و1 إلى 5
+
+        results[phase] = score
+
+    # حفظ النتائج في session_state
+    st.session_state.results = results
+
+    # حفظ باقي البيانات
     swot = st.session_state.swot
     iot_avg = st.session_state.iot_avg
 
@@ -233,6 +248,12 @@ st.session_state.results[phase] = score
         st.stop()
 
     user = st.session_state.user_info
+
+    # عرض ملخص سريع
+    if st.button("📊 عرض النتائج"):
+        avg_score = sum(results.values()) / len(results)
+        st.success(f"✅ تم حفظ النتائج بنجاح. متوسط التقييم: {avg_score:.2f}")
+
 
     # --- 1. رسم بياني SCOR ---
     st.subheader("🎯 تقييم جاهزية مراحل SCOR")

@@ -1,3 +1,5 @@
+# منصة SCOR AI المتكاملة - مشروع التخرج
+# تصميم: سُها ناصر سعيد عماره  |  إشراف: أ.د. عماد قمحاوي
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -265,7 +267,7 @@ excel_buffer = BytesIO()
 df_export.to_excel(excel_buffer, index=False)
 st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="IFE_EFE_Scores.xlsx", mime="application/vnd.ms-excel")
 # ====== PAGE 3: AI Recommendations ======
-elif page == "🤖 التوصيات الذكية":
+   elif page == "🤖 التوصيات الذكية":
     st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
     st.divider()
 

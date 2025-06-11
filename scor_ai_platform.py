@@ -333,8 +333,17 @@ st.divider()
 
 # --- 7. تصدير PDF ---
 st.subheader("📤 تحميل تقرير التوصيات PDF")
+from fpdf import FPDF
+import os
+
 pdf = FPDF()
 pdf.add_page()
+
+# إضافة الخط العربي
+font_path = os.path.join(os.path.dirname(__file__), "amiri.ttf")  # تأكدي إن الاسم صحيح
+pdf.add_font('Amiri', '', font_path, uni=True)
+pdf.set_font('Amiri', '', 14)
+
 pdf.set_font("Arial", size=12)
 user = st.session_state.get("user_info", {})
 company_name = user.get("الشركة", "اسم الشركة غير متوفر")
@@ -367,6 +376,42 @@ if page == "🤖 التوصيات الذكية":
     # التوصيات الذكية بناءً على نتائج SCOR وIoT وSWOT
 
     st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
+        # ✅ إنشاء كائن PDF يدعم العربية
+    class ArabicPDF(FPDF):
+        def __init__(self):
+            super().__init__()
+            self.add_page()
+            self.add_font('Amiri', '', 'amiri.ttf', uni=True)
+            self.set_font('Amiri', '', 14)
+            self.set_right_margin(10)
+            self.set_left_margin(10)
+
+        def add_arabic_text(self, text):
+            self.cell(0, 10, txt=text, ln=True, align="R")
+    # ✅ إنشاء محتوى PDF
+    pdf = ArabicPDF()
+
+    company_name = st.session_state.user_info.get("company", "بدون اسم")
+    sector = st.session_state.user_info.get("sector", "غير محدد")
+    swot = st.session_state.get("swot", {})
+    iot_avg = st.session_state.get("iot_avg", 0)
+
+    pdf.add_arabic_text("📄 تقرير التوصيات الذكية")
+    pdf.add_arabic_text(f"اسم الشركة: {company_name}")
+    pdf.add_arabic_text(f"القطاع: {sector}")
+    pdf.add_arabic_text(f"متوسط تقييم IoT: {round(iot_avg, 2)}")
+    pdf.add_arabic_text("تحليل SWOT:")
+
+    for key, items in swot.items():
+        if items:
+            pdf.add_arabic_text(f"- {key}: " + "، ".join(items))
+
+    # ✅ تصدير وتحميل
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    b64_pdf = base64.b64encode(pdf_output).decode('utf-8')
+    href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="تقرير_التوصيات.pdf">📥 تحميل التقرير PDF</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
     st.divider()
 
     results = st.session_state.get("results", {})

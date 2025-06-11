@@ -165,23 +165,25 @@ for phase in scor_phases:
         avg = total / len(phase_df)
         results[phase] = avg
 
-        if avg >= 4:
+if avg >= 4:
     st.success("🟢 ممتاز جدًا! مؤسستك على الطريق الصحيح في هذه المرحلة 💪")
     colors.append("#2ECC71")  # لون أخضر مميز
     swot["قوة"].append(phase_labels[phase])
+
 elif avg >= 3:
     st.info("🟡 جيد جدًا! يمكن تعزيز هذه المرحلة ببعض التحسينات")
     colors.append("#F1C40F")  # لون أصفر واضح
     swot["فرصة"].append(phase_labels[phase])
+
 elif avg >= 2:
     st.warning("🟠 أداء مقبول، يُنصح بالتحسين في هذه المرحلة")
     colors.append("#E67E22")
     swot["فرصة"].append(phase_labels[phase])
+
 else:
     st.error("🔴 ضعيف! تحتاج هذه المرحلة إلى إعادة نظر وتطوير جاد 🚨")
     colors.append("#E74C3C")
     swot["ضعف"].append(phase_labels[phase])
-
 
 # تقييم IoT
 with st.expander("📡 تقييم جاهزية IoT والتتبع اللحظي"):

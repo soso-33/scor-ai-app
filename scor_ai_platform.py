@@ -269,9 +269,9 @@ elif page == "🤖 التوصيات الذكية":
     st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
     st.divider()
 
-    results = st.session_state.results
-    iot_avg = st.session_state.iot_avg
-    swot = st.session_state.swot
+    results = st.session_state.get("results", {})
+    iot_avg = st.session_state.get("iot_avg", 0)
+    swot = st.session_state.get("swot", {})
 
     if not results:
         st.warning("يرجى تنفيذ التقييم أولًا.")
@@ -324,7 +324,7 @@ elif page == "🤖 التوصيات الذكية":
     """)
     st.divider()
 
-    # --- توصيات أدوات دعم القرار ---
+    # --- أدوات دعم القرار ---
     st.subheader("📊 دعم القرار بأدوات متقدمة")
     st.markdown("""
     - ⚖️ **خوارزمية الأولوية الذكية:**
@@ -339,7 +339,7 @@ elif page == "🤖 التوصيات الذكية":
     st.success("✅ شكراً لاستخدامك المنصة. يمكنك الآن تحميل التوصيات أو العودة للتقييم.")
     st.divider()
 
-    # --- تحميل التوصيات PDF ---
+    # --- تحميل PDF ---
     st.subheader("📥 تحميل تقرير التوصيات PDF")
     import io
     from reportlab.pdfgen import canvas
@@ -359,6 +359,7 @@ elif page == "🤖 التوصيات الذكية":
     buffer.seek(0)
 
     st.download_button("📤 تحميل PDF التوصيات", buffer, file_name="توصيات_SCOR_AI.pdf", mime="application/pdf")
+
 # ====== PAGE 4: Graduation Info ======
 elif page == "📄 معلومات مشروع التخرج":
     st.header("📄 معلومات مشروع التخرج")

@@ -9,7 +9,7 @@ import io
 import json
 
 # ====== إعداد الصفحة ======
-st.set_page_config(page_title="منصة SCOR الذكية", layout="centered")
+# st.set_page_config(page_title="منصة SCOR الذكية", layout="centered")
 
 # ====== التصميم العام والخط ======
 st.markdown("""
@@ -306,6 +306,69 @@ if page == "📊 النتائج والتحليل":
     excel_buffer = BytesIO()
     df_export.to_excel(excel_buffer, index=False)
     st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="IFE_EFE_Scores.xlsx", mime="application/vnd.ms-excel")
+elif page == "🤖 التوصيات الذكية":
+    st.header("🤖 التوصيات الذكية بناءً على نتائج التقييم")
+
+    if not st.session_state.results:
+        st.warning("يرجى تنفيذ التقييم أولًا.")
+        st.stop()
+
+    st.subheader("🔍 توصيات خاصة بكل مرحلة من SCOR:")
+    for phase, score in st.session_state.results.items():
+        if score < 2:
+            st.error(f"🔴 {phase_labels[phase]}: تحتاج إلى إعادة تصميم شاملة.")
+        elif score < 3.5:
+            st.warning(f"🟠 {phase_labels[phase]}: يُنصح بتحسين العمليات باستخدام أدوات الذكاء الاصطناعي.")
+        else:
+            st.success(f"🟢 {phase_labels[phase]}: أداء جيد ويمكن تعزيزه بالتحسين المستمر.")
+
+    st.subheader("🤖 أدوات الذكاء الاصطناعي المقترحة:")
+    st.markdown("""
+    - التخطيط: استخدام **التحليلات التنبؤية (Predictive Analytics)** لتحسين توقعات الطلب.
+    - التوريد: أنظمة **الشراء التلقائي (Automated Procurement)** باستخدام AI.
+    - التصنيع: دمج **الروبوتات الذكية (Smart Robotics)** في خطوط الإنتاج.
+    - التوزيع: تطبيق **تحسين المسارات بالذكاء الاصطناعي** لتقليل وقت التسليم.
+    - المرتجعات: نظام **إدارة المرتجعات الذكي** لتحديد أسباب الإرجاع وتقليلها.
+    """)
+
+    st.subheader("📡 توصيات IoT والتكامل اللحظي:")
+    if st.session_state.iot_avg < 3:
+        st.warning("⚠️ يوصى بدمج تقنيات IoT مثل المستشعرات ولوحات البيانات اللحظية لرفع الكفاءة.")
+    else:
+        st.success("✅ جاهزية IoT جيدة. يمكن تعزيز التكامل مع ERP/DSS.")
+elif page == "🏢 مقارنة الشركات":
+    st.header("🏢 مقارنة الأداء بين الشركات")
+
+    try:
+        df_bench = pd.read_excel("benchmark_data.xlsx")
+    except:
+        st.warning("⚠️ لا توجد بيانات مقارنة محفوظة حتى الآن.")
+        st.stop()
+
+    st.dataframe(df_bench)
+
+    st.subheader("📈 مقارنة حسب المرحلة:")
+    selected_phase = st.selectbox("اختر المرحلة", list(phase_labels.keys()))
+    if selected_phase in df_bench.columns:
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=df_bench["الشركة"],
+            y=df_bench[selected_phase],
+            text=df_bench[selected_phase],
+            textposition="auto"
+        ))
+        fig.update_layout(title=f"مقارنة جاهزية الشركات - {phase_labels[selected_phase]}")
+        st.plotly_chart(fig)
+
+    st.subheader("📉 متوسط IoT لكل شركة:")
+    fig2 = go.Figure()
+    fig2.add_trace(go.Bar(
+        x=df_bench["الشركة"],
+        y=df_bench["متوسط IoT"],
+        text=df_bench["متوسط IoT"],
+        textposition="auto"
+    ))
+    st.plotly_chart(fig2)
 
 # ====== PAGE 3: AI Recommendations ======
 elif page == "🤖 التوصيات الذكية ومعلومات التخرج":

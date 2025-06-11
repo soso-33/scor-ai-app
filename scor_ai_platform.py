@@ -26,6 +26,15 @@ h1, h2, h3, h4 {
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
 
+# ====== تعريف تسميات مراحل SCOR ليتم استخدامها في كل الصفحات ======
+phase_labels = {
+    "Plan": "📘 التخطيط",
+    "Source": "📗 التوريد",
+    "Make": "📙 التصنيع",
+    "Deliver": "📕 التوزيع",
+    "Return": "📒 المرتجعات"
+}
+
 # ====== التنقل الجانبي ======
 st.sidebar.title("🔍 أقسام المنصة")
 page = st.sidebar.radio("اختر الصفحة:", [
@@ -106,13 +115,6 @@ if page == "🧪 التقييم":
         st.stop()
 
     scor_phases = df['SCOR Phase'].unique()
-    phase_labels = {
-        "Plan": "📘 التخطيط",
-        "Source": "📗 التوريد",
-        "Make": "📙 التصنيع",
-        "Deliver": "📕 التوزيع",
-        "Return": "📒 المرتجعات"
-    }
 
     results = {}
     colors = []
@@ -154,25 +156,7 @@ if page == "🧪 التقييم":
     st.session_state.swot = swot
 
     if save_results:
-        data = {
-            "الاسم": [user_info["name"]],
-            "الشركة": [user_info["company"]],
-            "القطاع": [user_info["sector"]],
-            "الدولة": [user_info["country"]],
-            "التاريخ": [datetime.now().strftime("%Y-%m-%d %H:%M")],
-            "متوسط IoT": [round(iot_avg, 2)]
-        }
-        for phase, score in results.items():
-            data[phase] = [round(score, 2)]
-        df_new = pd.DataFrame(data)
-        try:
-            df_existing = pd.read_excel("benchmark_data.xlsx")
-            df_combined = pd.concat([df_existing, df_new], ignore_index=True)
-        except FileNotFoundError:
-            df_combined = df_new
-        df_combined.to_excel("benchmark_data.xlsx", index=False)
-        st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
-
+        save_results_to_excel(user_info["name"], user_info["company"], user_info["sector"], user_info["country"], iot_avg, results)
 
 
 # ====== PAGE 2: RESULTS & ANALYSIS ======
@@ -203,11 +187,11 @@ elif page == "📊 النتائج والتحليل":
 
     with st.expander("📊 تحليل BCG Dashboard"):
         bcg_importance = {}
-        labels, readiness, importance_vals, categories = [], [], [], []
+        labels_bcg, readiness, importance_vals, categories = [], [], [], []
         for phase in results:
             imp = st.slider(f"أهمية {phase_labels.get(phase, phase)}", 1, 5, 3, key=f"imp_{phase}")
             bcg_importance[phase] = imp
-            labels.append(phase)
+            labels_bcg.append(phase)
             readiness.append(results[phase])
             importance_vals.append(imp)
             if results[phase] >= 3 and imp >= 3:
@@ -222,13 +206,13 @@ elif page == "📊 النتائج والتحليل":
         fig_bcg = go.Figure()
         fig_bcg.add_trace(go.Scatter(
             x=importance_vals, y=readiness,
-            mode='markers+text', text=labels, textposition="top center",
+            mode='markers+text', text=labels_bcg, textposition="top center",
             marker=dict(size=18, color=['green' if c=="⭐ نجم" else 'orange' if c=="❓ استفهام" else 'blue' if c=="🐄 بقرة" else 'red' for c in categories])
         ))
         fig_bcg.update_layout(title="مصفوفة BCG", xaxis_title="الأهمية", yaxis_title="الجاهزية",
                               xaxis=dict(range=[0,5]), yaxis=dict(range=[0,5]))
         st.plotly_chart(fig_bcg)
-        for i, label in enumerate(labels):
+        for i, label in enumerate(labels_bcg):
             st.markdown(f"- {phase_labels.get(label, label)}: {categories[i]}")
 
     with st.expander("🔗 تصدير البيانات (ERP/Odoo)"):
@@ -241,6 +225,7 @@ elif page == "📊 النتائج والتحليل":
         json_str = json.dumps(export_data, ensure_ascii=False, indent=2)
         st.code(json_str, language='json')
         st.download_button("⬇️ تحميل JSON", data=json_str, file_name="scor_ai_export.json", mime="application/json")
+
 # ====== PAGE 3: AI Recommendations & Graduation Info ======
 elif page == "🤖 التوصيات الذكية ومعلومات التخرج":
     st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")

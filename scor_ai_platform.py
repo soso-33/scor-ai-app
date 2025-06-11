@@ -344,7 +344,7 @@ font_path = os.path.join(os.path.dirname(__file__), "amiri.ttf")  # تأكدي �
 pdf.add_font('Amiri', '', font_path, uni=True)
 pdf.set_font('Amiri', '', 14)
 
-pdf.set_font("Arial", size=12)
+pdf.set_font("Amiri", '', 14)
 user = st.session_state.get("user_info", {})
 company_name = user.get("الشركة", "اسم الشركة غير متوفر")
 pdf.cell(200, 10, txt=f"AI Strategic Report - {company_name}", ln=True, align="C")

@@ -8,10 +8,10 @@ from datetime import datetime
 import io
 import json
 
-# ====== PAGE CONFIGURATION ======
+# ====== إعداد الصفحة ======
 st.set_page_config(page_title="منصة SCOR الذكية", layout="centered")
 
-# ====== GLOBAL STYLE ======
+# ====== التصميم العام والخط ======
 st.markdown("""
 <style>
 html, body, [class*="css"]  {
@@ -26,7 +26,7 @@ h1, h2, h3, h4 {
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
 
-# ====== SIDEBAR NAVIGATION ======
+# ====== التنقل الجانبي ======
 st.sidebar.title("🔍 أقسام المنصة")
 page = st.sidebar.radio("اختر الصفحة:", [
     "🧪 التقييم",
@@ -35,7 +35,7 @@ page = st.sidebar.radio("اختر الصفحة:", [
     "🏢 مقارنة الشركات"
 ])
 
-# ====== SESSION STATE INIT ======
+# ====== حالة الجلسة ======
 if 'results' not in st.session_state:
     st.session_state.results = {}
     st.session_state.iot_avg = 0
@@ -43,7 +43,7 @@ if 'results' not in st.session_state:
     st.session_state.bcg_importance = {}
     st.session_state.user_info = {}
 
-# ====== PAGE 1: EVALUATION ======
+# ====== الصفحة الأولى: التقييم ======
 if page == "🧪 التقييم":
     st.header("🧪 التقييم العام")
     st.sidebar.header("📌 بيانات المستخدم")
@@ -88,8 +88,8 @@ if page == "🧪 التقييم":
         with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
             phase_df = df[df['SCOR Phase'] == phase]
             total = 0
-            for _, row in phase_df.iterrows():
-                score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=row['Question (AR)'])
+            for idx, row in enumerate(phase_df.itertuples()):
+                score = st.slider(f"{idx+1}. {row._3}", 1, 5, 3, key=f"{phase}_{idx}")
                 total += score
             avg = total / len(phase_df)
             results[phase] = avg
@@ -108,11 +108,13 @@ if page == "🧪 التقييم":
                 swot["ضعف"].append(phase_labels[phase])
 
     with st.expander("📡 تقييم جاهزية IoT والتتبع اللحظي"):
-        q1 = st.slider("هل تستخدم أجهزة استشعار؟", 1, 5, 3)
-        q2 = st.slider("هل لديك لوحات تحكم لحظية؟", 1, 5, 3)
-        q3 = st.slider("هل تحلل البيانات لحظيًا؟", 1, 5, 3)
-        q4 = st.slider("هل تتكامل البيانات مع ERP؟", 1, 5, 3)
-        iot_avg = (q1 + q2 + q3 + q4) / 4
+        q1 = st.radio("هل تستخدم أجهزة استشعار؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
+        q2 = st.radio("هل لديك لوحات تحكم لحظية؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
+        q3 = st.radio("هل تحلل البيانات لحظيًا؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
+        q4 = st.radio("هل تتكامل البيانات مع ERP؟", ["لا", "قليلاً", "أحيانًا", "بشكل جيد", "بشكل كامل"], index=2)
+
+        answers_map = {"لا": 1, "قليلاً": 2, "أحيانًا": 3, "بشكل جيد": 4, "بشكل كامل": 5}
+        iot_avg = (answers_map[q1] + answers_map[q2] + answers_map[q3] + answers_map[q4]) / 4
         st.markdown(f"**متوسط جاهزية IoT: {iot_avg:.1f}/5**")
 
     st.session_state.results = results
@@ -138,7 +140,6 @@ if page == "🧪 التقييم":
             df_combined = df_new
         df_combined.to_excel("benchmark_data.xlsx", index=False)
         st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
-
 # ====== PAGE 2: RESULTS & ANALYSIS ======
 elif page == "📊 النتائج والتحليل":
     st.header("📊 النتائج ومصفوفات التحليل")
@@ -146,6 +147,10 @@ elif page == "📊 النتائج والتحليل":
     swot = st.session_state.swot
     iot_avg = st.session_state.iot_avg
     user = st.session_state.user_info
+
+    if not results:
+        st.warning("يرجى تنفيذ التقييم أولًا.")
+        st.stop()
 
     labels = list(results.keys())
     values = list(results.values())
@@ -165,7 +170,7 @@ elif page == "📊 النتائج والتحليل":
         bcg_importance = {}
         labels, readiness, importance_vals, categories = [], [], [], []
         for phase in results:
-            imp = st.slider(f"أهمية {phase}", 1, 5, 3)
+            imp = st.slider(f"أهمية {phase_labels.get(phase, phase)}", 1, 5, 3, key=f"imp_{phase}")
             bcg_importance[phase] = imp
             labels.append(phase)
             readiness.append(results[phase])
@@ -178,6 +183,7 @@ elif page == "📊 النتائج والتحليل":
                 categories.append("🐄 بقرة")
             else:
                 categories.append("🐶 كلب")
+
         fig_bcg = go.Figure()
         fig_bcg.add_trace(go.Scatter(
             x=importance_vals, y=readiness,
@@ -188,7 +194,7 @@ elif page == "📊 النتائج والتحليل":
                               xaxis=dict(range=[0,5]), yaxis=dict(range=[0,5]))
         st.plotly_chart(fig_bcg)
         for i, label in enumerate(labels):
-            st.markdown(f"- {label}: {categories[i]}")
+            st.markdown(f"- {phase_labels.get(label, label)}: {categories[i]}")
 
     with st.expander("🔗 تصدير البيانات (ERP/Odoo)"):
         export_data = {
@@ -200,51 +206,54 @@ elif page == "📊 النتائج والتحليل":
         json_str = json.dumps(export_data, ensure_ascii=False, indent=2)
         st.code(json_str, language='json')
         st.download_button("⬇️ تحميل JSON", data=json_str, file_name="scor_ai_export.json", mime="application/json")
+# ====== PAGE 3: AI Recommendations & Graduation Info ======
+elif page == "🤖 التوصيات الذكية ومعلومات التخرج":
+    st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
 
-# ====== PAGE 3: AI RECOMMENDATIONS ======
-elif page == "🤖 التوصيات الذكية":
-    st.header("🤖 التوصيات الذكية")
     results = st.session_state.results
     iot_avg = st.session_state.iot_avg
-    if results:
-        avg_score = sum(results.values()) / len(results)
-        if avg_score >= 4 and iot_avg >= 4:
-            st.success("✅ جاهزية عالية لتوسيع تطبيقات الذكاء الاصطناعي والربط مع ERP")
-        elif avg_score >= 3:
-            st.info("🛠️ يُنصح بالتحول الرقمي التدريجي")
-        elif avg_score < 3 and iot_avg < 3:
-            st.warning("⚠️ تحتاج المؤسسة إلى إعادة بناء رقمية")
-        else:
-            st.info("📌 يمكن البدء بتطبيقات AI محدودة")
-    else:
-        st.warning("يرجى تنفيذ التقييم أولًا.")
+    swot = st.session_state.swot
 
-# ====== PAGE 4: BENCHMARKING ======
-elif page == "🏢 مقارنة الشركات":
-    st.header("🏢 مقارنة نتائج الشركات")
-    try:
-        df_benchmark = pd.read_excel("benchmark_data.xlsx")
-    except FileNotFoundError:
-        st.error("❌ لا توجد بيانات محفوظة")
+    if not results:
+        st.warning("يرجى تنفيذ التقييم أولًا.")
         st.stop()
 
-    companies = df_benchmark["الشركة"].unique().tolist()
-    selected = st.multiselect("اختر الشركات للمقارنة:", companies, default=companies[:3])
+    st.subheader("✨ توصيات ذكية حسب الجاهزية")
+    for phase, score in results.items():
+        if score < 2.5:
+            st.markdown(f"🔴 **{phase_labels.get(phase, phase)}:** منخفض الجاهزية. يُوصى باستخدام حلول ذكاء اصطناعي مثل التنبؤ التلقائي وRPA.")
+        elif score < 4:
+            st.markdown(f"🟡 **{phase_labels.get(phase, phase)}:** متوسط الجاهزية. يُوصى بتوسيع التكامل مع أنظمة ERP أو DSS.")
+        else:
+            st.markdown(f"🟢 **{phase_labels.get(phase, phase)}:** جاهزية عالية. يُوصى بتفعيل التعلم الآلي لتحسين الأداء.")
 
-    if selected:
-        df_filtered = df_benchmark[df_benchmark["الشركة"].isin(selected)]
-        st.dataframe(df_filtered)
+    st.subheader("🌐 جاهزية إنترنت الأشياء (IoT)")
+    if iot_avg < 2:
+        st.error("منخفضة جدًا. يُنصح بتركيب حساسات وربطها بالأنظمة.")
+    elif iot_avg < 4:
+        st.warning("متوسطة. يُنصح بتحسين الاتصالات وتحليل البيانات.")
+    else:
+        st.success("جاهزية ممتازة لإنترنت الأشياء.")
 
-        phases = [col for col in df_filtered.columns if col in ['Plan', 'Source', 'Make', 'Deliver', 'Return']]
-        fig = go.Figure()
-        for company in selected:
-            row = df_filtered[df_filtered["الشركة"] == company].iloc[0]
-            fig.add_trace(go.Bar(name=company, x=phases, y=[row[p] for p in phases]))
-        fig.update_layout(barmode='group', yaxis_range=[0,5], title="مقارنة SCOR")
-        st.plotly_chart(fig)
+    st.subheader("🏁 مقترحات استراتيجية")
+    if "ضعف" in swot and swot["ضعف"]:
+        st.markdown("- 📉 يجب معالجة نقاط الضعف التالية: " + ", ".join(swot["ضعف"]))
+    if "فرصة" in swot and swot["فرصة"]:
+        st.markdown("- 🚀 يُوصى بالاستفادة من الفرص التالية: " + ", ".join(swot["فرصة"]))
+    if "قوة" in swot and swot["قوة"]:
+        st.markdown("- 🛡️ تعظيم الاستفادة من نقاط القوة: " + ", ".join(swot["قوة"]))
 
-        with st.expander("📥 تحميل كل النتائج Excel"):
-            excel_buffer = io.BytesIO()
-            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                df_benchmark.to_excel(writer, index=False)
-            st.download_button("⬇️ تحميل الملف", data=excel_buffer.getvalue(), file_name="SCOR_Benchmark_All.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    st.markdown("---")
+    st.subheader("📄 معلومات مشروع التخرج")
+
+    st.markdown("""
+    - **عنوان المشروع:** منصة تقييم جاهزية الذكاء الاصطناعي في سلاسل الإمداد باستخدام نموذج SCOR  
+    - **الطالبة:** سُهى ناصر سعيد عماره  
+    - **المشرف:** أ.د. عماد كمّاهى  
+    - **الجامعة:** [اكتبي اسم الجامعة هنا]  
+    - **العام الدراسي:** 2024 - 2025  
+    """)
+
+    st.markdown("🧾 **تم تصميم وتطوير هذه المنصة باستخدام Python وStreamlit مع دعم الذكاء الاصطناعي والتحليلات الذكية.**")
+
+    st.success("✅ شكراً لاستخدامك المنصة. يمكنك الآن تحميل النتائج أو العودة لتعديل التقييم.")

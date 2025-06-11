@@ -66,93 +66,113 @@ def save_results_to_excel(user_name, company_name, sector, country, iot_avg, res
 
 # ====== PAGE 1: EVALUATION ======
 if page == "🧪 التقييم":
-    # تعريف حالة البداية فقط مرة واحدة
-    if 'user_submitted' not in st.session_state:
-        st.session_state.user_submitted = False
+    st.header("🧪 التقييم العام")
+    st.sidebar.header("📌 بيانات المستخدم")
 
-    st.header("🧪 التقييم لتبني الذكاء الاصطناعي - SCOR")
-    st.markdown("### 👤 بيانات المستخدم")
+    # إعداد المتغيرات في الحالة
+    if "started" not in st.session_state:
+        st.session_state.started = False
 
-    with st.form("user_info_form", clear_on_submit=False):
-        user_name = st.text_input("الاسم الكامل")
-        company_name = st.text_input("اسم الشركة")
-        sector = st.selectbox("القطاع", ["الرعاية الصحية","التصنيع","اللوجستيات","الخدمات","أخرى"])
-        country = st.text_input("الدولة")
-        save_results = st.checkbox("أوافق على حفظ نتائجي")
-        submitted = st.form_submit_button("ابدأ التقييم")
+    if not st.session_state.started:
+        with st.sidebar.form("user_form"):
+            user_name = st.text_input("الاسم الكامل")
+            company_name = st.text_input("اسم الشركة أو المؤسسة")
+            sector = st.selectbox("القطاع", ["الرعاية الصحية", "التصنيع", "اللوجستيات", "الخدمات", "أخرى"])
+            country = st.text_input("الدولة")
+            save_results = st.checkbox("أوافق على حفظ نتائجي للمقارنة لاحقًا")
+            submitted = st.form_submit_button("ابدأ التقييم")
 
         if submitted:
             st.session_state.user_info = {
                 'name': user_name,
                 'company': company_name,
                 'sector': sector,
-                'country': country
+                'country': country,
+                'save_results': save_results
             }
-            st.session_state.save_results = save_results
-            st.session_state.user_submitted = True
+            st.session_state.started = True
+        else:
+            st.warning("👈 برجاء إدخال البيانات والضغط على 'ابدأ التقييم' لعرض الأسئلة.")
+            st.stop()
 
-    if not st.session_state.user_submitted:
-        st.stop()
+    # بعد ملء البيانات نبدأ عرض الأسئلة
+    user_info = st.session_state.user_info
+    save_results = user_info.get("save_results", False)
 
-    # تحميل الأسئلة
     try:
         df = pd.read_excel("SCOR_AI_Questions.xlsx")
     except:
-        st.error("❌ لا يوجد الملف SCOR_AI_Questions.xlsx")
+        st.error("❌ تأكد من وجود ملف SCOR_AI_Questions.xlsx في نفس مجلد الكود.")
         st.stop()
 
+    scor_phases = df['SCOR Phase'].unique()
     phase_labels = {
-        "Plan":"📘 التخطيط","Source":"📗 التوريد",
-        "Make":"📙 التصنيع","Deliver":"📕 التوزيع","Return":"📒 المرتجعات"
+        "Plan": "📘 التخطيط",
+        "Source": "📗 التوريد",
+        "Make": "📙 التصنيع",
+        "Deliver": "📕 التوزيع",
+        "Return": "📒 المرتجعات"
     }
+
     results = {}
-    swot = {"قوة":[],"ضعف":[],"فرصة":[],"تهديد":[]}
+    colors = []
+    swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
 
-    st.markdown("## 📝 تقييم المراحل")
-    for phase in df['SCOR Phase'].unique():
-        st.markdown(f"### {phase_labels.get(phase, phase)}")
-        total = 0
-        phase_q = df[df['SCOR Phase']==phase]
-        for i, row in enumerate(phase_q.itertuples(), start=1):
-            score = st.radio(f"{i}. {row._3}", [1,2,3,4,5], index=2, key=f"{phase}_{i}", horizontal=True, format_func=lambda x:f"{x}⭐")
-            total += score
-        avg = total/len(phase_q)
-        results[phase] = avg
+    for phase in scor_phases:
+        with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
+            phase_df = df[df['SCOR Phase'] == phase]
+            total = 0
+            for _, row in phase_df.iterrows():
+                score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=row['Question (AR)'])
+                total += score
+            avg = total / len(phase_df)
+            results[phase] = avg
 
-        if avg>=4:
-            st.success("🔹 ممتاز")
-            swot["قوة"].append(phase_labels.get(phase))
-        elif avg>=2.5:
-            st.warning("🟠 جيد")
-            swot["فرصة"].append(phase_labels.get(phase))
-        else:
-            st.error("🔴 ضعيف")
-            swot["ضعف"].append(phase_labels.get(phase))
+            if avg >= 4:
+                st.success("🔵 ممتاز")
+                colors.append("#3498DB")
+                swot["قوة"].append(phase_labels[phase])
+            elif avg >= 2.5:
+                st.warning("🟠 جيد")
+                colors.append("#F39C12")
+                swot["فرصة"].append(phase_labels[phase])
+            else:
+                st.error("🔴 ضعيف")
+                colors.append("#E74C3C")
+                swot["ضعف"].append(phase_labels[phase])
 
-    st.markdown("## 📡 تقييم IoT")
-    q1 = st.radio("1. أجهزة استشعار؟",[1,2,3,4,5],index=2,key="iot1",horizontal=True)
-    q2 = st.radio("2. لوحات تحكم؟",[1,2,3,4,5],index=2,key="iot2",horizontal=True)
-    q3 = st.radio("3. تحليل لحظي؟",[1,2,3,4,5],index=2,key="iot3",horizontal=True)
-    q4 = st.radio("4. تكامل مع ERP؟",[1,2,3,4,5],index=2,key="iot4",horizontal=True)
+    with st.expander("📡 تقييم جاهزية IoT والتتبع اللحظي"):
+        q1 = st.slider("هل تستخدم أجهزة استشعار؟", 1, 5, 3)
+        q2 = st.slider("هل لديك لوحات تحكم لحظية؟", 1, 5, 3)
+        q3 = st.slider("هل تحلل البيانات لحظيًا؟", 1, 5, 3)
+        q4 = st.slider("هل تتكامل البيانات مع ERP؟", 1, 5, 3)
+        iot_avg = (q1 + q2 + q3 + q4) / 4
+        st.markdown(f"**متوسط جاهزية IoT: {iot_avg:.1f}/5**")
 
-    iot_avg = (q1+q2+q3+q4)/4
-    st.markdown(f"**متوسط IoT: {iot_avg:.1f}/5**")
-
-    # حفظ في الجلسة
     st.session_state.results = results
     st.session_state.iot_avg = iot_avg
     st.session_state.swot = swot
 
-    # حفظ النتيجة في الملف لو موافقة
-    if st.session_state.save_results:
-        save_results_to_excel(
-            st.session_state.user_info['name'],
-            st.session_state.user_info['company'],
-            st.session_state.user_info['sector'],
-            st.session_state.user_info['country'],
-            iot_avg,
-            results
-        )
+    if save_results:
+        data = {
+            "الاسم": [user_info["name"]],
+            "الشركة": [user_info["company"]],
+            "القطاع": [user_info["sector"]],
+            "الدولة": [user_info["country"]],
+            "التاريخ": [datetime.now().strftime("%Y-%m-%d %H:%M")],
+            "متوسط IoT": [round(iot_avg, 2)]
+        }
+        for phase, score in results.items():
+            data[phase] = [round(score, 2)]
+        df_new = pd.DataFrame(data)
+        try:
+            df_existing = pd.read_excel("benchmark_data.xlsx")
+            df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+        except FileNotFoundError:
+            df_combined = df_new
+        df_combined.to_excel("benchmark_data.xlsx", index=False)
+        st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
+
 
 
 # ====== PAGE 2: RESULTS & ANALYSIS ======

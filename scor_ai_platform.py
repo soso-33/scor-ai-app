@@ -159,8 +159,49 @@ if page == "🧪 التقييم":
         save_results_to_excel(user_info["name"], user_info["company"], user_info["sector"], user_info["country"], iot_avg, results)
 
 
-# ====== PAGE 2: RESULTS & ANALYSIS ======
-elif page == "📊 النتائج والتحليل":
+# منصة SCOR AI المتكاملة - مشروع التخرج
+# تصميم: سُهى ناصر سعيد عماره - تحت إشراف: د. عماد كمهاوي
+
+import streamlit as st
+import plotly.graph_objs as go
+import pandas as pd
+import json
+from fpdf import FPDF
+import base64
+from io import BytesIO
+
+# إعدادات الصفحة
+st.set_page_config(page_title="SCOR AI Platform", layout="wide")
+
+# تخزين الجلسة
+if "results" not in st.session_state:
+    st.session_state.results = {}
+if "swot" not in st.session_state:
+    st.session_state.swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
+if "iot_avg" not in st.session_state:
+    st.session_state.iot_avg = 0
+if "user_info" not in st.session_state:
+    st.session_state.user_info = {"name": "", "company": ""}
+if "ife_scores" not in st.session_state:
+    st.session_state.ife_scores = []
+if "efe_scores" not in st.session_state:
+    st.session_state.efe_scores = []
+
+# --- واجهة المستخدم ---
+pages = ["🏠 الصفحة الرئيسية", "📝 التقييم", "📊 النتائج والتحليل"]
+page = st.sidebar.radio("انتقل إلى الصفحة:", pages)
+
+phase_labels = {
+    "Plan": "التخطيط (Plan)",
+    "Make": "الإنتاج (Make)",
+    "Source": "التوريد (Source)",
+    "Deliver": "التوصيل (Deliver)",
+    "Return": "الإرجاع (Return)",
+    "Enable": "التمكين (Enable)"
+}
+
+# ====== PAGE: RESULTS & ANALYSIS ======
+if page == "📊 النتائج والتحليل":
     st.header("📊 النتائج ومصفوفات التحليل")
     results = st.session_state.results
     swot = st.session_state.swot
@@ -188,7 +229,7 @@ elif page == "📊 النتائج والتحليل":
         )
         st.markdown(f"- **{phase_labels.get(phase, phase)}**: {score:.1f} → {status}")
 
-    # --- تحليل جاهزية IoT ---
+    # --- تحليل IoT ---
     st.subheader("🤖 تقييم جاهزية إنترنت الأشياء IoT:")
     if iot_avg:
         iot_status = (
@@ -200,66 +241,73 @@ elif page == "📊 النتائج والتحليل":
     else:
         st.markdown("لم يتم تقييم IoT بعد.")
 
-    # --- تحليل SWOT ---
-    st.subheader("🧠 مصفوفة SWOT الذكية:")
-    st.markdown(f"""
-    - **نقاط القوة:** {', '.join(swot['قوة']) or 'لا توجد'}
-    - **نقاط الضعف:** {', '.join(swot['ضعف']) or 'لا توجد'}
-    - **الفرص:** {', '.join(swot['فرصة']) or 'لا توجد'}
-    - **التهديدات:** سيتم تحليلها لاحقًا بناءً على أداء السوق
-    """)
+    # --- تحليل SWOT إلى IFE و EFE ---
+    st.subheader("📌 تقييم IFE و EFE")
+    st.markdown("أدخل الأوزان والتقييم لكل عامل داخلي (IFE) وخارجي (EFE):")
 
-    # --- مصفوفة BCG تلقائية ---
-    with st.expander("📊 تحليل مصفوفة BCG"):
-        st.markdown("تحليل تلقائي بناءً على الجاهزية والأهمية (3 كمتوسط لكل مرحلة).")
+    ife_inputs = []
+    efe_inputs = []
+    for i, item in enumerate(swot['قوة'] + swot['ضعف']):
+        weight = st.number_input(f"📌 {item} (الوزن الداخلي)", 0.0, 1.0, 0.1, step=0.05, key=f"ife_weight_{i}")
+        rating = st.slider(f"التقييم لـ {item} (1-4)", 1, 4, 3, key=f"ife_rating_{i}")
+        ife_inputs.append(weight * rating)
+    st.session_state.ife_scores = ife_inputs
 
-        labels_bcg = []
-        readiness = []
-        importance_vals = []
-        categories = []
+    for i, item in enumerate(swot['فرصة'] + swot['تهديد']):
+        weight = st.number_input(f"🌐 {item} (الوزن الخارجي)", 0.0, 1.0, 0.1, step=0.05, key=f"efe_weight_{i}")
+        rating = st.slider(f"التقييم لـ {item} (1-4)", 1, 4, 3, key=f"efe_rating_{i}")
+        efe_inputs.append(weight * rating)
+    st.session_state.efe_scores = efe_inputs
 
-        for phase in results:
-            imp = 3  # قيمة افتراضية لكل المراحل (يمكن تعديلها لسلايدر عام)
-            r = results[phase]
-            labels_bcg.append(phase)
-            readiness.append(r)
-            importance_vals.append(imp)
+    ife_total = sum(ife_inputs)
+    efe_total = sum(efe_inputs)
+    st.success(f"✅ مجموع IFE: {ife_total:.2f} | مجموع EFE: {efe_total:.2f}")
 
-            if r >= 3 and imp >= 3:
-                categories.append("⭐ نجم")
-            elif r >= 3:
-                categories.append("❓ استفهام")
-            elif imp >= 3:
-                categories.append("🐄 بقرة")
-            else:
-                categories.append("🐶 كلب")
+    # --- Radar Chart ---
+    st.subheader("📡 مقارنة IFE مقابل EFE (رادار)")
+    fig_radar = go.Figure()
+    fig_radar.add_trace(go.Scatterpolar(r=[ife_total]*6, theta=list(results.keys()), fill='toself', name='IFE'))
+    fig_radar.add_trace(go.Scatterpolar(r=[efe_total]*6, theta=list(results.keys()), fill='toself', name='EFE'))
+    fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0,5])), showlegend=True)
+    st.plotly_chart(fig_radar)
 
-        fig_bcg = go.Figure()
-        fig_bcg.add_trace(go.Scatter(
-            x=importance_vals, y=readiness,
-            mode='markers+text', text=labels_bcg, textposition="top center",
-            marker=dict(size=18, color=['green' if c=="⭐ نجم" else 'orange' if c=="❓ استفهام" else 'blue' if c=="🐄 بقرة" else 'red' for c in categories])
-        ))
-        fig_bcg.update_layout(title="مصفوفة BCG", xaxis_title="الأهمية", yaxis_title="الجاهزية",
-                              xaxis=dict(range=[0,5]), yaxis=dict(range=[0,5]))
-        st.plotly_chart(fig_bcg)
+    # --- توصيات استراتيجية ---
+    st.subheader("🧭 التوصيات الاستراتيجية:")
+    strategy = ""
+    if ife_total >= 3 and efe_total >= 3:
+        strategy = "💼 استراتيجية النمو والفرص (Growth Strategy)"
+    elif ife_total < 3 and efe_total >= 3:
+        strategy = "🔄 استراتيجية التحول والتحسين (Turnaround Strategy)"
+    elif ife_total >= 3 and efe_total < 3:
+        strategy = "🛡️ استراتيجية الدفاع (Defensive Strategy)"
+    else:
+        strategy = "⚠️ استراتيجية البقاء والنجاة (Survival Strategy)"
+    st.markdown(f"**الاستراتيجية المقترحة:** {strategy}")
 
-        for i, label in enumerate(labels_bcg):
-            st.markdown(f"- **{phase_labels.get(label, label)}** → {categories[i]}")
+    # --- تصدير PDF ---
+    st.subheader("📤 تحميل تقرير التوصيات PDF")
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"AI Strategic Report - {user['company']}", ln=True, align="C")
+    pdf.cell(200, 10, txt=f"User: {user['name']}", ln=True)
+    pdf.cell(200, 10, txt=f"IFE Total: {ife_total:.2f} | EFE Total: {efe_total:.2f}", ln=True)
+    pdf.multi_cell(0, 10, txt=f"Recommended Strategy: {strategy}")
 
-    # --- تصدير البيانات ---
-    with st.expander("🔗 تصدير البيانات (ERP/Odoo)"):
-        export_data = {
-            "user": user,
-            "SCOR_results": results,
-            "IoT_score": iot_avg,
-            "SWOT": swot
-        }
-        json_str = json.dumps(export_data, ensure_ascii=False, indent=2)
-        st.code(json_str, language='json')
-        st.download_button("⬇️ تحميل JSON", data=json_str, file_name="scor_ai_export.json", mime="application/json")
+    buffer = BytesIO()
+    pdf.output(buffer)
+    b64_pdf = base64.b64encode(buffer.getvalue()).decode()
+    href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="SCOR_Strategy_{user['company']}.pdf">📄 Download PDF</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
-# ====== PAGE 3: AI Recommendations & Graduation Info ======
+    # --- تصدير Excel ---
+    st.subheader("📤 تحميل Excel لنتائج IFE و EFE")
+    df_export = pd.DataFrame({"IFE Scores": st.session_state.ife_scores, "EFE Scores": st.session_state.efe_scores})
+    excel_buffer = BytesIO()
+    df_export.to_excel(excel_buffer, index=False)
+    st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="IFE_EFE_Scores.xlsx", mime="application/vnd.ms-excel")
+
+# ====== PAGE 3: AI Recommendations ======
 elif page == "🤖 التوصيات الذكية ومعلومات التخرج":
     st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
 
@@ -324,15 +372,66 @@ elif page == "🤖 التوصيات الذكية ومعلومات التخرج":
         - Chatbots ذكية للطلب والتفاعل
     """)
 
+    st.success("✅ شكراً لاستخدامك المنصة. يمكنك الآن تحميل التوصيات أو العودة للتقييم.")
+
+    # PDF download button
+    import io
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, 800, "📄 توصيات الذكاء الاصطناعي بناءً على تقييم SCOR")
+    y = 770
+    for phase, score in results.items():
+        pdf.drawString(50, y, f"{phase_labels.get(phase, phase)}: {score}")
+        y -= 20
+    pdf.drawString(50, y-10, f"متوسط IoT: {iot_avg:.2f}")
+    pdf.showPage()
+    pdf.save()
+    buffer.seek(0)
+
+    st.download_button("📥 تحميل التوصيات PDF", buffer, file_name="توصيات_SCOR_AI.pdf", mime="application/pdf")
+
+# ====== PAGE 4: Graduation Info ======
+elif page == "📄 معلومات مشروع التخرج":
+    st.header("📄 معلومات مشروع التخرج")
+
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Graduation_hat.svg/800px-Graduation_hat.svg.png", width=100)
+    with col2:
+        st.markdown("""
+        ### 🎓 العنوان الكامل للمشروع:
+        **منصة تقييم جاهزية الذكاء الاصطناعي في سلاسل الإمداد باستخدام نموذج SCOR**
+
+        ### 🧕 الطالبة:
+        **سُها ناصر سعيد عماره**
+
+        ### 👨‍🏫 المشرف:
+        **أ.د. عماد كمّاهى**
+
+        ### 🏫 الجامعة:
+        **[القاهرة]**
+
+        ### 📅 العام الدراسي:
+        **2024 - 2025**
+        """)
+
     st.markdown("---")
-    st.subheader("📄 معلومات مشروع التخرج")
+    st.subheader("🛠️ تقنيات وأدوات التطوير المستخدمة")
     st.markdown("""
-    - **عنوان المشروع:** منصة تقييم جاهزية الذكاء الاصطناعي في سلاسل الإمداد باستخدام نموذج SCOR  
-    - **الطالبة:** سُهى ناصر سعيد عماره  
-    - **المشرف:** أ.د. عماد كمّاهى  
-    - **الجامعة:** [اكتبي اسم الجامعة هنا]  
-    - **العام الدراسي:** 2024 - 2025  
+    - لغة Python
+    - مكتبة Streamlit لواجهة المستخدم
+    - تحليل SCOR وSWOT وBCG
+    - الذكاء الاصطناعي AutoML + IoT
+    - تقارير PDF وExcel تفاعلية
+    - قاعدة بيانات SQLite
+    - Dashboards وPower BI
+    - دعم توصيات ذكية وتحسين الخدمات
     """)
 
-    st.markdown("🧾 **تم تصميم وتطوير هذه المنصة باستخدام Python وStreamlit مع دعم الذكاء الاصطناعي والتحليلات الذكية.**")
-    st.success("✅ شكراً لاستخدامك المنصة. يمكنك الآن تحميل النتائج أو العودة لتعديل التقييم.")
+    st.markdown("---")
+    st.info("🧑‍💻 تم تطوير هذه المنصة كجزء من مشروع تخرج بكلية [اسم الكلية]، وتهدف إلى تمكين المؤسسات من تقييم جاهزيتها للتحول الذكي باستخدام أحدث الأدوات.")
+    st.success("✅ شكراً لاهتمامك بمشروع التخرج 💚")

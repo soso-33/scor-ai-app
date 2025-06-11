@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير تقييم SCOR</title>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; padding: 30px; }
+        h1, h2 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        td, th { padding: 10px; border: 1px solid #ccc; }
+        .section { margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <h1>تقرير تقييم جاهزية الذكاء الاصطناعي</h1>
+    <p><strong>الاسم:</strong> {{ user.name }}<br>
+       <strong>الشركة:</strong> {{ user.company }}<br>
+       <strong>القطاع:</strong> {{ user.sector }} - {{ user.country }}</p>
+
+    <div class="section">
+        <h2>نتائج SCOR</h2>
+        <table>
+            <tr><th>المرحلة</th><th>الدرجة / 5</th></tr>
+            {% for phase, score in scores.items() %}
+            <tr><td>{{ phase }}</td><td>{{ '%.1f'|format(score) }}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>مصفوفة SWOT</h2>
+        <p><strong>نقاط القوة:</strong> {{ swot['قوة'] | join(', ') }}</p>
+        <p><strong>نقاط الضعف:</strong> {{ swot['ضعف'] | join(', ') }}</p>
+        <p><strong>الفرص:</strong> {{ swot['فرصة'] | join(', ') }}</p>
+        <p><strong>التهديدات:</strong> سيتم تحديدها لاحقًا</p>
+    </div>
+
+    <p style="margin-top: 60px; text-align: center; color: gray;">
+        💡 تم توليد هذا التقرير بواسطة منصة SCOR المصممة بواسطة: <strong>سُهاناصر سعيد عماره</strong>
+        </p>
+</body>
+</html>

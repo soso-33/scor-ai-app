@@ -220,7 +220,11 @@ elif page == "📊 النتائج والتحليل":
         st.warning("يرجى تنفيذ التقييم أولًا.")
         st.stop()
 
-    results = st.session_state.results
+ if phase == "Return":
+    score = 5 - score  # عكس تقييم المرتجعات
+
+st.session_state.results[phase] = score
+
     swot = st.session_state.swot
     iot_avg = st.session_state.iot_avg
 
@@ -307,7 +311,7 @@ st.subheader("📤 تحميل تقرير التوصيات PDF")
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Arial", size=12)
-pdf.cell(200, 10, txt=f"AI Strategic Report - {user['company']}", ln=True, align="C")
+pdf.cell(200, 10, txt=f"AI Strategic Report - {st.session_state.user_info['الشركة']}", ln=True, align="C")
 pdf.cell(200, 10, txt=f"User: {user['name']}", ln=True)
 pdf.cell(200, 10, txt=f"IFE Total: {ife_total:.2f} | EFE Total: {efe_total:.2f}", ln=True)
 pdf.multi_cell(0, 10, txt=f"Recommended Strategy: {strategy}")

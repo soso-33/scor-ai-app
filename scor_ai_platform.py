@@ -157,6 +157,36 @@ if page == "🧪 التقييم":
         st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
 
 
+    iot_avg = (q1 + q2 + q3 + q4) / 4
+    st.markdown(f"**متوسط جاهزية IoT: {iot_avg:.1f}/5**")
+
+    # حفظ في السيشن
+    st.session_state.results = results
+    st.session_state.iot_avg = iot_avg
+    st.session_state.swot = swot
+
+    # حفظ النتائج في الملف
+    if save_results:
+        data = {
+            "الاسم": [user_name],
+            "الشركة": [company_name],
+            "القطاع": [sector],
+            "الدولة": [country],
+            "التاريخ": [datetime.now().strftime("%Y-%m-%d %H:%M")],
+            "متوسط IoT": [round(iot_avg, 2)]
+        }
+        for phase, score in results.items():
+            data[phase] = [round(score, 2)]
+        df_new = pd.DataFrame(data)
+        try:
+            df_existing = pd.read_excel("benchmark_data.xlsx")
+            df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+        except FileNotFoundError:
+            df_combined = df_new
+        df_combined.to_excel("benchmark_data.xlsx", index=False)
+        st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
+
+
     st.session_state.results = results
     st.session_state.iot_avg = iot_avg
     st.session_state.swot = swot

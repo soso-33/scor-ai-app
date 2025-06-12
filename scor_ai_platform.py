@@ -669,7 +669,8 @@ if page == "🧪 التقييم":
             phase_df = df[df['SCOR Phase'] == phase]
             total = 0
             for _, row in phase_df.iterrows():
-                score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=row['Question (AR)'])
+             score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=f"{phase}_{_}")
+
                 total += score
             avg = total / len(phase_df)
             results[phase] = avg

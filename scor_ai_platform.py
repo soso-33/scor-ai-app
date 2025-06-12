@@ -408,12 +408,10 @@ excel_buffer = BytesIO()
 df_export.to_excel(excel_buffer, index=False)
 st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="IFE_EFE_Scores.xlsx", mime="application/vnd.ms-excel")
 if page == "🤖 التوصيات الذكية":
-    # كود التوصيات
+    # ✅ عنوان الصفحة
+    st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
 
-    # التوصيات الذكية بناءً على نتائج SCOR وIoT وSWOT
-
-st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
-        # ✅ إنشاء كائن PDF يدعم العربية
+    # ✅ إنشاء كائن PDF يدعم العربية
     class ArabicPDF(FPDF):
         def __init__(self):
             super().__init__()
@@ -425,6 +423,7 @@ st.header("🤖 التوصيات الذكية المدعومة بالذكاء ا
 
         def add_arabic_text(self, text):
             self.cell(0, 10, txt=text, ln=True, align="R")
+
     # ✅ إنشاء محتوى PDF
     pdf = ArabicPDF()
 

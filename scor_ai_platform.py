@@ -582,7 +582,6 @@ st.info("🧑‍💻 تم تطوير هذه المنصة كمشروع تخرج �
 st.success("✅ شكراً لاهتمامك بمشروع التخرج 💚")
 
 # ====== PAGE CONFIGURATION ======
-st.set_page_config(page_title="منصة SCOR الذكية", layout="centered")
 
 # ====== GLOBAL STYLE ======
 st.markdown("""

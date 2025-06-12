@@ -626,7 +626,7 @@ if 'results' not in st.session_state:
 if page == "🧪 التقييم":
     st.header("🧪 التقييم العام")
     st.sidebar.header("📌 بيانات المستخدم")
-    
+
     with st.sidebar.form("user_sidebar_form"):
         user_name = st.text_input("الاسم الكامل")
         company_name = st.text_input("اسم الشركة أو المؤسسة")
@@ -664,18 +664,13 @@ if page == "🧪 التقييم":
     colors = []
     swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
 
- for phase in scor_phases:
-    with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
-        phase_df = df[df['SCOR Phase'] == phase]
-        total = 0
-        for _, row in phase_df.iterrows():
-            score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=f"{phase}_{_}")
-            total += score
-
-        avg = total / len(phase_df)
-        results[phase] = avg
-
-
+    for phase in scor_phases:
+        with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
+            phase_df = df[df['SCOR Phase'] == phase]
+            total = 0
+            for idx, row in phase_df.iterrows():
+                score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=f"{phase}_{idx}")
+                total += score
 
             avg = total / len(phase_df)
             results[phase] = avg
@@ -724,7 +719,6 @@ if page == "🧪 التقييم":
             df_combined = df_new
         df_combined.to_excel("benchmark_data.xlsx", index=False)
         st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
-
 # ====== PAGE 2: RESULTS & ANALYSIS ======
 elif page == "📊 النتائج والتحليل":
     st.header("📊 النتائج ومصفوفات التحليل")

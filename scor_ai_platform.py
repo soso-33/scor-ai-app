@@ -1,7 +1,6 @@
 # منصة SCOR AI المتكاملة - مشروع التخرج
 # تصميم: سُها ناصر سعيد عماره  |  إشراف: أ.د. عماد قمحاوي
 import streamlit as st
-st.set_page_config(page_title="منصة SCOR الذكية", layout="centered")
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go  # <-- أضف هذا السطر

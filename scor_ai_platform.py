@@ -664,16 +664,17 @@ if page == "🧪 التقييم":
     colors = []
     swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
 
-  for phase in scor_phases:
+ for phase in scor_phases:
     with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
         phase_df = df[df['SCOR Phase'] == phase]
         total = 0
-  for _, row in phase_df.iterrows():
+        for _, row in phase_df.iterrows():
             score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=f"{phase}_{_}")
             total += score
 
         avg = total / len(phase_df)
         results[phase] = avg
+
 
 
             avg = total / len(phase_df)

@@ -7,6 +7,13 @@ import plotly.graph_objects as go  # <-- أضف هذا السطر
 from fpdf import FPDF
 from io import BytesIO
 import base64
+from fpdf import FPDF
+
+class ArabicPDF(FPDF):
+    def __init__(self):
+        super().__init__()
+        self.add_font('Amiri', '', 'amiri.ttf', uni=True)  # ← استخدم اسم الملف الصحيح هنا
+        self.set_font('Amiri', '', 14)
 
 # ===== إعداد التصميم العام =====
 st.markdown("""

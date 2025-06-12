@@ -1,14 +1,21 @@
 # منصة SCOR AI المتكاملة - مشروع التخرج
 # تصميم: سُها ناصر سعيد عماره  |  إشراف: أ.د. عماد قمحاوي
+# يمكن تحسين استيراد المكتبات بهذا الشكل ليكون أكثر تنظيماً:
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import plotly.graph_objects as go  # <-- أضف هذا السطر
+import plotly.graph_objects as go
 from fpdf import FPDF
 from io import BytesIO
 import base64
-from fpdf import FPDF
+import os  # قد تحتاجينه لمعالجة مسارات الملفات
 
+# ثم تأتي إعدادات الصفحة مباشرة
+st.set_page_config(
+    page_title="منصة SCOR الذكية",
+    layout="centered",
+    page_icon="🤖"  # إضافة أيقونة للتطبيق
+)
 class ArabicPDF(FPDF):
     def __init__(self):
         super().__init__()

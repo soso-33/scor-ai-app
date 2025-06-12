@@ -623,11 +623,11 @@ if 'results' not in st.session_state:
     st.session_state.bcg_importance = {}
     st.session_state.user_info = {}
 
-# ====== PAGE 1: EVALUATION ======
 if page == "🧪 التقييم":
     st.header("🧪 التقييم العام")
     st.sidebar.header("📌 بيانات المستخدم")
-    with st.sidebar.form("user_form"):
+    
+    with st.sidebar.form("form_user_info"):  # ✅ غيرت الاسم هنا
         user_name = st.text_input("الاسم الكامل")
         company_name = st.text_input("اسم الشركة أو المؤسسة")
         sector = st.selectbox("القطاع", ["الرعاية الصحية", "التصنيع", "اللوجستيات", "الخدمات", "أخرى"])

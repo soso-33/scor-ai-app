@@ -4,3 +4,4 @@ plotly
 fpdf
 openpyxl
 XlsxWriter
+streamlit-option-menu

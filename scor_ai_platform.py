@@ -1,27 +1,37 @@
 # منصة SCOR AI المتكاملة - مشروع التخرج
 # تصميم: سُها ناصر سعيد عماره  |  إشراف: أ.د. عماد قمحاوي
 # يمكن تحسين استيراد المكتبات بهذا الشكل ليكون أكثر تنظيماً:
-import streamlit as st
+# 1. كل استيرادات المكتبات الأساسية أولاً (بدون streamlit)
 import pandas as pd
 from datetime import datetime
 import plotly.graph_objects as go
 from fpdf import FPDF
 from io import BytesIO
 import base64
-import os  # قد تحتاجينه لمعالجة مسارات الملفات
+import os
 
-# ثم تأتي إعدادات الصفحة مباشرة
+# 2. استيراد streamlit فقط الآن
+import streamlit as st
+
+# 3. يجب أن يكون هذا أول أمر streamlit في الكود
 st.set_page_config(
-    page_title="منصة SCOR الذكية",
+    page_title="منصة SCOR الذكية", 
     layout="centered",
-    page_icon="🤖"  # إضافة أيقونة للتطبيق
+    page_icon="🤖"
 )
+
+# 4. الآن باقي استيرادات streamlit إن وجدت
+from streamlit_option_menu import option_menu  # إن كنت تستخدمينها
+
+# 5. باقي الكود...
 class ArabicPDF(FPDF):
     def __init__(self):
         super().__init__()
-        self.add_font('Amiri', '', 'amiri.ttf', uni=True)  # ← استخدم اسم الملف الصحيح هنا
+        self.add_font('Amiri', '', 'amiri.ttf', uni=True)
         self.set_font('Amiri', '', 14)
 
+# ===== إعداد التصميم العام =====
+# ... باقي الكود كما هو
 # ===== إعداد التصميم العام =====
 st.markdown("""
 <style>

@@ -625,6 +625,22 @@ if 'results' not in st.session_state:
 
 if page == "🧪 التقييم":
     st.header("🧪 التقييم العام")
+
+    st.markdown("""
+    <div style="background-color:#fff9db; padding:15px; border-radius:10px; border:1px solid #ffe58f; margin-bottom:20px;">
+        <h4 style="color:#8a6d3b;">📌 قبل أن تبدأ التقييم:</h4>
+        <ul style="color:#856404; font-size:15px;">
+            <li>اقرأ كل سؤال بعناية.</li>
+            <li>اختر تقييم من 1 إلى 5 حسب واقع شركتك.</li>
+            <li>اضغط على السهم لإظهار كل مرحلة من مراحل SCOR.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.sidebar.header("📌 بيانات المستخدم")
+    with st.sidebar.form("user_sidebar_form"):
+        ...
+
     st.sidebar.header("📌 بيانات المستخدم")
 
     with st.sidebar.form("user_sidebar_form"):

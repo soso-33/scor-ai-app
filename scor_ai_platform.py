@@ -27,8 +27,15 @@ from streamlit_option_menu import option_menu  # إن كنت تستخدمينه�
 class ArabicPDF(FPDF):
     def __init__(self):
         super().__init__()
+        self.add_page()  # ✅ مهم جدًا لتظهر النصوص من البداية
         self.add_font('Amiri', '', 'amiri.ttf', uni=True)
         self.set_font('Amiri', '', 14)
+        self.set_right_margin(10)
+        self.set_left_margin(10)
+
+    def add_arabic_text(self, text):
+        self.cell(0, 10, txt=text, ln=True, align="R")
+
 
 # ===== إعداد التصميم العام =====
 # ... باقي الكود كما هو
@@ -405,7 +412,7 @@ if page == "🤖 التوصيات الذكية":
 
     # التوصيات الذكية بناءً على نتائج SCOR وIoT وSWOT
 
-    st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
+st.header("🤖 التوصيات الذكية المدعومة بالذكاء الاصطناعي")
         # ✅ إنشاء كائن PDF يدعم العربية
     class ArabicPDF(FPDF):
         def __init__(self):

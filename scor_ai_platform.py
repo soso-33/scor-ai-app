@@ -338,6 +338,8 @@ import os
 
 pdf = FPDF()
 pdf.add_page()
+pdf.add_font('Amiri', '', 'Amiri-Regular.ttf', uni=True)
+pdf.set_font('Amiri', '', 14)
 
 # إضافة الخط العربي
 font_path = os.path.join(os.path.dirname(__file__), "amiri.ttf")  # تأكدي إن الاسم صحيح

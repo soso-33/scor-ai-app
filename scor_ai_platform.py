@@ -516,7 +516,7 @@ else:
     st.download_button("📤 تحميل PDF التوصيات", buffer, file_name="توصيات_SCOR_AI.pdf", mime="application/pdf")
 
 # ====== PAGE 4: Graduation Info ======
-elif page == "📄 معلومات مشروع التخرج":
+if page == "📄 معلومات مشروع التخرج":
     st.header("📄 معلومات مشروع التخرج")
 
     col1, col2 = st.columns([1, 3])

@@ -9,6 +9,8 @@ from fpdf import FPDF
 from io import BytesIO
 import base64
 import os
+import json
+
 
 # 2. استيراد streamlit فقط الآن
 import streamlit as st

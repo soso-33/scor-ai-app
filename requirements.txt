@@ -5,3 +5,7 @@ fpdf
 openpyxl
 XlsxWriter
 streamlit-option-menu
+reportlab
+arabic_reshaper
+python-bidi
+

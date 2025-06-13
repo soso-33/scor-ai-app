@@ -13,7 +13,6 @@ from fpdf import FPDF
 from io import BytesIO
 import base64
 import os
-
 import streamlit as st
 from streamlit_option_menu import option_menu
 
@@ -180,7 +179,6 @@ def show_assessment_page():
 #      اختيار الصفحة
 # ======================= #
 page = st.sidebar.selectbox("📌 اختر الصفحة", [
-   page = st.sidebar.selectbox("📌 اختر الصفحة", [
     "🏠 الصفحة الرئيسية",
     "📊 لوحة التحكم الرئيسية",
     "📝 التقييم",

@@ -454,7 +454,8 @@ if page == "🤖 التوصيات الذكية":
 
     results = st.session_state.get("results", {})
     iot_avg = st.session_state.get("iot_avg", 0)
-    swot = st.session_state.get("swot", {})st.subheader("🧠 تحليل SWOT الأكاديمي")
+    swot = st.session_state.get("swot", {})
+st.subheader("🧠 تحليل SWOT الأكاديمي")
 
 swot_titles = {
     "قوة": "✅ نقاط القوة: تمثل مجالات الاستقرار والتميز",

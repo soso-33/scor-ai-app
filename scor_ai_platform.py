@@ -459,6 +459,7 @@ with open(pdf_path, "rb") as f:
 
 # === تصدير النتائج والتقارير ===
 st.subheader("📤 تصدير النتائج والتقارير")
+
 with st.expander("📁 تحميل البيانات"):
     col1, col2, col3 = st.columns(3)
 
@@ -479,12 +480,20 @@ with st.expander("📁 تحميل البيانات"):
         )
 
     with col3:
-        st.download_button(
-            label="⬇️ تحميل تقرير PDF",
-          data=f.read(),
+        # قراءة ملف PDF من المسار
+        try:
+            with open(pdf_path, "rb") as f:
+                pdf_bytes = f.read()
 
-            file_name="dashboard_report.pdf",
-            mime="application/pdf"
+            st.download_button(
+                label="⬇️ تحميل تقرير PDF",
+                data=pdf_bytes,
+                file_name="dashboard_report.pdf",
+                mime="application/pdf"
+            )
+        except FileNotFoundError:
+            st.error("❌ لم يتم العثور على ملف التقرير PDF. تأكد من أنه تم إنشاؤه بنجاح.")
+
         )
 
 # === روابط تنقل ذكية داخل المنصة ===

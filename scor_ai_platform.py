@@ -698,17 +698,17 @@ if page == "🧪 التقييم":
     swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
 
     for phase in scor_phases:
-        with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
-            phase_df = df[df['SCOR Phase'] == phase]
-            total = 0
-            for idx, row in phase_df.iterrows():
-                score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=f"{phase}_{idx}")
-                total += score
+    with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
+        phase_df = df[df['SCOR Phase'] == phase]
+        total = 0
+        for idx, row in phase_df.iterrows():
+            score = st.slider(f"🔘 {row['Question (AR)']}", 1, 5, 3, key=f"{phase}_{idx}")
+            total += score
 
-            avg = total / len(phase_df)
-            results[phase] = avg
+        avg = total / len(phase_df)
+        results[phase] = avg
 
-                    if avg >= 4:
+        if avg >= 4:
             st.success("🔵 ممتاز")
             colors.append("#3498DB")
             swot["قوة"].append(
@@ -735,6 +735,7 @@ if page == "🧪 التقييم":
                 f"يوصى بإجراء تقييم داخلي شامل وتحديد العوائق الرئيسية ثم البدء في برنامج تحسين تدريجي يشمل تدريب الفرق "
                 f"وتبني أنظمة ذكاء اصطناعي مناسبة للسياق العملي."
             )
+
 
 
     with st.expander("📡 تقييم جاهزية IoT والتتبع اللحظي"):

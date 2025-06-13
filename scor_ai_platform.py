@@ -696,8 +696,7 @@ if page == "🧪 التقييم":
     results = {}
     colors = []
     swot = {"قوة": [], "ضعف": [], "فرصة": [], "تهديد": []}
-
-    for phase in scor_phases:
+for phase in scor_phases:
     with st.expander(f"🔹 مرحلة: {phase_labels.get(phase, phase)}", expanded=True):
         phase_df = df[df['SCOR Phase'] == phase]
         total = 0
@@ -707,6 +706,9 @@ if page == "🧪 التقييم":
 
         avg = total / len(phase_df)
         results[phase] = avg
+
+        # ثم الشروط الخاصة بـ SWOT هنا...
+
 
         if avg >= 4:
             st.success("🔵 ممتاز")

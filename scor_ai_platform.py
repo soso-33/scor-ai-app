@@ -14,23 +14,19 @@ from io import BytesIO
 import base64
 import os
 import streamlit as st
-st.set_page_config(
-    page_title="SCOR AI Platform",
-    page_icon="🧠",
-    layout="wide",  # مهم: يخلي الـ sidebar دائم الظهور
-    initial_sidebar_state="expanded"  # يخليها مفتوحة دائمًا
-)
-
-from streamlit_option_menu import option_menu
 
 # ======================= #
 #        إعداد الصفحة
 # ======================= #
 st.set_page_config(
     page_title="منصة SCOR الذكية",
-    layout="centered",
-    page_icon="🤖"
+    page_icon="🤖",
+    layout="wide",  # أو "centered" حسب تفضيلك
+    initial_sidebar_state="expanded"
 )
+
+from streamlit_option_menu import option_menu
+
 
 # ======================= #
 #     التنسيق العام (CSS)
@@ -420,7 +416,16 @@ with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
     writer.close()
 st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="dashboard_data.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+# تأكد من جلب البيانات من الـ session
+user = st.session_state.get("user_info", {})
+company_name = user.get("company", "شركتي")
+iot_avg = st.session_state.get("iot_avg", 0)
+scor_avg = st.session_state.get("scor_avg", 0)
+cpm_results = st.session_state.get("cpm_results", {})
+
 # --- تصدير PDF (اختياري مبسط) ---
+from fpdf import FPDF
+
 pdf = FPDF()
 pdf.add_page()
 pdf.set_font("Arial", size=12)
@@ -431,8 +436,10 @@ pdf.cell(200, 10, txt=f"القطاع: {user.get('sector', '')}", ln=True)
 pdf.cell(200, 10, txt=f"متوسط SCOR: {scor_avg}", ln=True)
 pdf.cell(200, 10, txt=f"متوسط IoT: {iot_avg}", ln=True)
 pdf.cell(200, 10, txt=f"نتيجة CPM: {cpm_results.get(company_name, 'غير متاحة')}", ln=True)
+
 pdf_output = pdf.output(dest="S").encode("latin-1")
 st.download_button("⬇️ تحميل تقرير PDF", data=pdf_output, file_name="dashboard_report.pdf", mime="application/pdf")
+
 # === روابط تنقل ذكية داخل المنصة ===
 st.subheader("🔗 روابط سريعة")
 

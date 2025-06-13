@@ -642,29 +642,21 @@ if 'results' not in st.session_state:
 
 if page == "🧪 التقييم":
     st.header("🧪 التقييم العام")
+
+    st.markdown("""
+    <div style="background-color:#fff9db; padding:15px; border-radius:10px; border:1px solid #ffe58f; margin-bottom:20px;">
+        <h4 style="color:#8a6d3b;">📌 قبل أن تبدأ التقييم:</h4>
+        <ul style="color:#856404; font-size:15px;">
+            <li>اقرأ كل سؤال بعناية.</li>
+            <li>اختر تقييم من 1 إلى 5 حسب واقع شركتك.</li>
+            <li>اضغط على السهم لإظهار كل مرحلة من مراحل SCOR.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.sidebar.header("📌 بيانات المستخدم")
+    ...
 
-with st.sidebar.form("user_sidebar_form"):
-    user_name = st.text_input("الاسم الكامل")
-    company_name = st.text_input("اسم الشركة أو المؤسسة")
-    sector = st.selectbox("القطاع", ["الرعاية الصحية", "التصنيع", "اللوجستيات", "الخدمات", "أخرى"])
-    country = st.text_input("الدولة")
-    save_results = st.checkbox("أوافق على حفظ نتائجي للمقارنة لاحقًا")
-    
-    # ✅ الزر الأساسي لإرسال النموذج
-    submitted = st.form_submit_button("ابدأ التقييم")
-
-# ✅ وقف الكود لغاية ما المستخدم يضغط الزر
-if not submitted:
-    st.stop()
-
-# ✅ حفظ البيانات في session_state
-st.session_state.user_info = {
-    'name': user_name,
-    'company': company_name,
-    'sector': sector,
-    'country': country
-}
 
 
     st.markdown("""

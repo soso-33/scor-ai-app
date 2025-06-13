@@ -481,7 +481,8 @@ with st.expander("📁 تحميل البيانات"):
     with col3:
         st.download_button(
             label="⬇️ تحميل تقرير PDF",
-            data=pdf_output,
+          data=f.read(),
+
             file_name="dashboard_report.pdf",
             mime="application/pdf"
         )

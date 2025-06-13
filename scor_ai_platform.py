@@ -179,9 +179,39 @@ def show_assessment_page():
         save_results_to_excel(st.session_state.user_info, iot_avg, results)
 
 # ======================= #
-#      اختيار الصفحة
+#    تنسيق Sidebar ثابت
 # ======================= #
 
+# --- تنسيقات CSS مخصصة للخط والحجم ---
+st.markdown("""
+    <style>
+    /* تغيير حجم الخط للعناصر في الـ Sidebar */
+    .sidebar .element-container {
+        font-size: 18px !important;
+    }
+
+    /* تحسين مظهر القائمة الجانبية */
+    [data-testid="stSidebar"] {
+        background-color: #f9f9f9;
+        border-right: 2px solid #CCC;
+        padding: 10px;
+    }
+
+    /* عنوان في الـ sidebar */
+    .sidebar-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    </style>
+""", unsafe_allow_html=True)
+
+# --- عنوان أكاديمي واضح ---
+st.sidebar.markdown('<div class="sidebar-title">🎓 لوحة التنقل الأكاديمية</div>', unsafe_allow_html=True)
+
+# --- قائمة التنقل الرئيسية ---
 page = st.sidebar.selectbox("📌 اختر الصفحة", [
     "🏠 الصفحة الرئيسية",
     "📊 لوحة التحكم الرئيسية",
@@ -195,6 +225,7 @@ page = st.sidebar.selectbox("📌 اختر الصفحة", [
     "🛠️ لوحة تحكم المشرف",
     "📄 معلومات مشروع التخرج"
 ])
+
 
 # ======================= #
 #     استدعاء الصفحات

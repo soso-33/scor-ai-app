@@ -394,27 +394,24 @@ else:
     # === تصدير البيانات النهائية ===
 st.subheader("📤 تصدير النتائج والتقارير")
 
-export_data = {
-    pdf.cell(200, 10, txt="اسم المستخدم: غير متاح", ln=True)
+with st.expander("📁 تحميل البيانات"):
+    col1, col2 = st.columns(2)
 
-    "الدولة": user.get("country", ""),
-    "القطاع": user.get("sector", ""),
-    "SCOR": st.session_state.get("results", {}),
-    "IoT": st.session_state.get("iot_avg", 0),
-    "SWOT": st.session_state.get("swot", {}),
-    "CPM": st.session_state.get("cpm_results", {})
-}
+    with col1:
+        st.download_button(
+            label="⬇️ تحميل JSON",
+            data=json_str,
+            file_name="dashboard_data.json",
+            mime="application/json"
+        )
 
-# --- تصدير JSON ---
-json_str = json.dumps(export_data, ensure_ascii=False, indent=2)
-st.download_button("⬇️ تحميل JSON", data=json_str, file_name="dashboard_data.json", mime="application/json")
-
-# --- تصدير Excel ---
-excel_buffer = BytesIO()
-with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-    pd.DataFrame([export_data]).to_excel(writer, sheet_name="Dashboard", index=False)
-    writer.close()
-st.download_button("⬇️ تحميل Excel", data=excel_buffer.getvalue(), file_name="dashboard_data.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    with col2:
+        st.download_button(
+            label="⬇️ تحميل Excel",
+            data=excel_buffer.getvalue(),
+            file_name="dashboard_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
 # تأكد من جلب البيانات من الـ session
 user = st.session_state.get("user_info", {})

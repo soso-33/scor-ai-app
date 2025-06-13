@@ -416,18 +416,46 @@ excel_buffer = BytesIO()
 with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
     pd.DataFrame([export_data]).to_excel(writer, sheet_name="Dashboard", index=False)
 
-# PDF
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font("Arial", size=12)
-pdf.cell(200, 10, txt="📄 تقرير منصة الذكاء الاصطناعي - ملخص", ln=True, align="C")
-pdf.cell(200, 10, txt=f"الشركة: {user.get('company', '')}", ln=True)
-pdf.cell(200, 10, txt=f"الدولة: {user.get('country', '')}", ln=True)
-pdf.cell(200, 10, txt=f"القطاع: {user.get('sector', '')}", ln=True)
-pdf.cell(200, 10, txt=f"متوسط SCOR: {scor_avg}", ln=True)
-pdf.cell(200, 10, txt=f"متوسط IoT: {iot_avg}", ln=True)
-pdf.cell(200, 10, txt=f"نتيجة CPM: {cpm_results.get(company_name, 'غير متاحة')}", ln=True)
-pdf_output = pdf.output(dest="S").encode("latin-1")
+# --- تصدير PDF يدعم اللغة العربية ---
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+import arabic_reshaper
+from bidi.algorithm import get_display
+
+# === تجهيز البيانات ===
+company_name = user.get("company", "شركتي")
+country = user.get("country", "")
+sector = user.get("sector", "")
+scor_avg = st.session_state.get("scor_avg", 0)
+iot_avg = st.session_state.get("iot_avg", 0)
+cpm_score = st.session_state.get("cpm_results", {}).get(company_name, "غير متاحة")
+
+# === إنشاء ملف PDF ===
+pdf_path = "dashboard_report.pdf"
+c = canvas.Canvas(pdf_path, pagesize=A4)
+
+y = 800
+c.setFont("Helvetica", 14)
+
+for line in [
+    f"📄 تقرير الشركة: {company_name}",
+    f"الدولة: {country}",
+    f"القطاع: {sector}",
+    f"متوسط SCOR: {scor_avg}",
+    f"متوسط IoT: {iot_avg}",
+    f"نتيجة CPM: {cpm_score}"
+]:
+    reshaped_text = arabic_reshaper.reshape(line)
+    bidi_text = get_display(reshaped_text)
+    c.drawRightString(550, y, bidi_text)
+    y -= 30
+
+c.save()
+
+# === زر تحميل PDF ===
+with open(pdf_path, "rb") as f:
+    st.download_button("⬇️ تحميل تقرير PDF", data=f.read(), file_name="dashboard_report.pdf", mime="application/pdf")
+
 
 # === تصدير النتائج والتقارير ===
 st.subheader("📤 تصدير النتائج والتقارير")

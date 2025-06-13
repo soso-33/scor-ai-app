@@ -468,7 +468,8 @@ with st.expander("📁 تحميل البيانات"):
             label="⬇️ تحميل JSON",
             data=json_str,
             file_name="dashboard_data.json",
-            mime="application/json"
+            mime="application/json",
+            key="download_json"
         )
 
     with col2:
@@ -476,7 +477,8 @@ with st.expander("📁 تحميل البيانات"):
             label="⬇️ تحميل Excel",
             data=excel_buffer.getvalue(),
             file_name="dashboard_data.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="download_excel"
         )
 
     with col3:
@@ -488,10 +490,12 @@ with st.expander("📁 تحميل البيانات"):
                 label="⬇️ تحميل تقرير PDF",
                 data=pdf_bytes,
                 file_name="dashboard_report.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
+                key="download_pdf"
             )
         except FileNotFoundError:
             st.error("❌ لم يتم العثور على ملف التقرير PDF. تأكد من أنه تم إنشاؤه بنجاح.")
+
 
 
 # === روابط تنقل ذكية داخل المنصة ===

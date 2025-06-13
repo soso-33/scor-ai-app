@@ -14,6 +14,13 @@ from io import BytesIO
 import base64
 import os
 import streamlit as st
+st.set_page_config(
+    page_title="SCOR AI Platform",
+    page_icon="🧠",
+    layout="wide",  # مهم: يخلي الـ sidebar دائم الظهور
+    initial_sidebar_state="expanded"  # يخليها مفتوحة دائمًا
+)
+
 from streamlit_option_menu import option_menu
 
 # ======================= #
@@ -178,12 +185,6 @@ def show_assessment_page():
 # ======================= #
 #      اختيار الصفحة
 # ======================= #
-st.set_page_config(
-    page_title="SCOR AI Platform",
-    page_icon="🧠",
-    layout="wide",  # مهم: يخلي الـ sidebar دائم الظهور
-    initial_sidebar_state="expanded"  # يخليها مفتوحة دائمًا
-)
 
 page = st.sidebar.selectbox("📌 اختر الصفحة", [
     "🏠 الصفحة الرئيسية",

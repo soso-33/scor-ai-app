@@ -395,8 +395,8 @@ else:
 st.subheader("📤 تصدير النتائج والتقارير")
 
 export_data = {
-    "اسم المستخدم": user.get("name", ""),
-    "الشركة": user.get("company", ""),
+    pdf.cell(200, 10, txt="اسم المستخدم: غير متاح", ln=True)
+
     "الدولة": user.get("country", ""),
     "القطاع": user.get("sector", ""),
     "SCOR": st.session_state.get("results", {}),

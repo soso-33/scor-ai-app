@@ -185,24 +185,25 @@ def show_assessment_page():
 # --- تنسيقات CSS مخصصة للخط والحجم ---
 st.markdown("""
     <style>
-    /* تغيير حجم الخط للعناصر في الـ Sidebar */
-    .sidebar .element-container {
-        font-size: 18px !important;
+    /* تغيير حجم الخط لعناصر القائمة */
+    section[data-testid="stSidebar"] .css-1d391kg {
+        font-size: 20px !important;
     }
 
     /* تحسين مظهر القائمة الجانبية */
     [data-testid="stSidebar"] {
         background-color: #f9f9f9;
         border-right: 2px solid #CCC;
-        padding: 10px;
+        padding: 15px;
     }
 
-    /* عنوان في الـ sidebar */
+    /* عنوان واضح ومميز في الـ sidebar */
     .sidebar-title {
-        font-size: 22px;
+        font-size: 26px;
         font-weight: bold;
         color: #2c3e50;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
+        text-align: center;
     }
 
     </style>
@@ -211,8 +212,8 @@ st.markdown("""
 # --- عنوان أكاديمي واضح ---
 st.sidebar.markdown('<div class="sidebar-title">🎓 لوحة التنقل الأكاديمية</div>', unsafe_allow_html=True)
 
-# --- قائمة التنقل الرئيسية ---
-page = st.sidebar.selectbox("📌 اختر الصفحة", [
+# --- قائمة التنقل الرئيسية (باستخدام radio لتكون ظاهرة وثابتة) ---
+page = st.sidebar.radio("📌 اختر الصفحة", [
     "🏠 الصفحة الرئيسية",
     "📊 لوحة التحكم الرئيسية",
     "📝 التقييم",

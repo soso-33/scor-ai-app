@@ -354,8 +354,6 @@ if results:
 else:
     st.warning("⚠️ لم يتم تنفيذ تقييم SCOR بعد.")
 
-
-
     # === رسم بياني لمقارنة CPM بين شركتي والمنافسين ===
 st.subheader("🏁 مقارنة شركتي مع المنافسين - مصفوفة CPM")
 
@@ -391,11 +389,42 @@ if cpm_results:
         st.info(f"👀 الشركة الأفضل حاليًا: **{top_company}**. يُوصى بتحليل الفجوات وتحسين جاهزية SCOR.")
 else:
     st.warning("⚠️ لم يتم تسجيل نتائج CPM بعد. الرجاء إدخالها من صفحة '🏢 مقارنة الشركات'.")
-    # === تصدير البيانات النهائية ===
-st.subheader("📤 تصدير النتائج والتقارير")
+  # === تجهيز البيانات للتصدير ===
+export_data = {
+    "اسم المستخدم": "غير متاح",
+    "الدولة": user.get("country", ""),
+    "القطاع": user.get("sector", ""),
+    "SCOR": st.session_state.get("results", {}),
+    "IoT": iot_avg,
+    "SWOT": st.session_state.get("swot", {}),
+    "CPM": cpm_results
+}
 
+# JSON
+json_str = json.dumps(export_data, ensure_ascii=False, indent=2)
+
+# Excel
+excel_buffer = BytesIO()
+with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+    pd.DataFrame([export_data]).to_excel(writer, sheet_name="Dashboard", index=False)
+
+# PDF
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Arial", size=12)
+pdf.cell(200, 10, txt="📄 تقرير منصة الذكاء الاصطناعي - ملخص", ln=True, align="C")
+pdf.cell(200, 10, txt=f"الشركة: {user.get('company', '')}", ln=True)
+pdf.cell(200, 10, txt=f"الدولة: {user.get('country', '')}", ln=True)
+pdf.cell(200, 10, txt=f"القطاع: {user.get('sector', '')}", ln=True)
+pdf.cell(200, 10, txt=f"متوسط SCOR: {scor_avg}", ln=True)
+pdf.cell(200, 10, txt=f"متوسط IoT: {iot_avg}", ln=True)
+pdf.cell(200, 10, txt=f"نتيجة CPM: {cpm_results.get(company_name, 'غير متاحة')}", ln=True)
+pdf_output = pdf.output(dest="S").encode("latin-1")
+
+# === تصدير النتائج والتقارير ===
+st.subheader("📤 تصدير النتائج والتقارير")
 with st.expander("📁 تحميل البيانات"):
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.download_button(
@@ -413,29 +442,13 @@ with st.expander("📁 تحميل البيانات"):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-# تأكد من جلب البيانات من الـ session
-user = st.session_state.get("user_info", {})
-company_name = user.get("company", "شركتي")
-iot_avg = st.session_state.get("iot_avg", 0)
-scor_avg = st.session_state.get("scor_avg", 0)
-cpm_results = st.session_state.get("cpm_results", {})
-
-# --- تصدير PDF (اختياري مبسط) ---
-from fpdf import FPDF
-
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font("Arial", size=12)
-pdf.cell(200, 10, txt="📄 تقرير منصة الذكاء الاصطناعي - ملخص", ln=True, align="C")
-pdf.cell(200, 10, txt=f"الشركة: {user.get('company', '')}", ln=True)
-pdf.cell(200, 10, txt=f"الدولة: {user.get('country', '')}", ln=True)
-pdf.cell(200, 10, txt=f"القطاع: {user.get('sector', '')}", ln=True)
-pdf.cell(200, 10, txt=f"متوسط SCOR: {scor_avg}", ln=True)
-pdf.cell(200, 10, txt=f"متوسط IoT: {iot_avg}", ln=True)
-pdf.cell(200, 10, txt=f"نتيجة CPM: {cpm_results.get(company_name, 'غير متاحة')}", ln=True)
-
-pdf_output = pdf.output(dest="S").encode("latin-1")
-st.download_button("⬇️ تحميل تقرير PDF", data=pdf_output, file_name="dashboard_report.pdf", mime="application/pdf")
+    with col3:
+        st.download_button(
+            label="⬇️ تحميل تقرير PDF",
+            data=pdf_output,
+            file_name="dashboard_report.pdf",
+            mime="application/pdf"
+        )
 
 # === روابط تنقل ذكية داخل المنصة ===
 st.subheader("🔗 روابط سريعة")

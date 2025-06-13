@@ -389,7 +389,14 @@ if cpm_results:
         st.info(f"👀 الشركة الأفضل حاليًا: **{top_company}**. يُوصى بتحليل الفجوات وتحسين جاهزية SCOR.")
 else:
     st.warning("⚠️ لم يتم تسجيل نتائج CPM بعد. الرجاء إدخالها من صفحة '🏢 مقارنة الشركات'.")
-  # === تجهيز البيانات للتصدير ===
+# ✅ تأكد من جلب البيانات من الـ session قبل أي استخدام
+user = st.session_state.get("user_info", {})
+company_name = user.get("company", "شركتي")
+iot_avg = st.session_state.get("iot_avg", 0)
+scor_avg = st.session_state.get("scor_avg", 0)
+cpm_results = st.session_state.get("cpm_results", {})
+
+# === تجهيز البيانات للتصدير ===
 export_data = {
     "اسم المستخدم": "غير متاح",
     "الدولة": user.get("country", ""),
@@ -399,6 +406,7 @@ export_data = {
     "SWOT": st.session_state.get("swot", {}),
     "CPM": cpm_results
 }
+
 
 # JSON
 json_str = json.dumps(export_data, ensure_ascii=False, indent=2)

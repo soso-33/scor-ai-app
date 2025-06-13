@@ -772,7 +772,7 @@ for phase in scor_phases:
         df_combined.to_excel("benchmark_data.xlsx", index=False)
         st.success("✅ تم حفظ نتائج التقييم للمقارنة المستقبلية.")
 # ====== PAGE 2: RESULTS & ANALYSIS ======
-elif page == "📊 النتائج والتحليل":
+if page == "📊 النتائج والتحليل":
     st.header("📊 النتائج ومصفوفات التحليل")
     results = st.session_state.results
     swot = st.session_state.swot
